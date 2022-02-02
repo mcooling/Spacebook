@@ -1,0 +1,10 @@
+SERVER CONNECTION
+- terminal > sbook (alias added to .bash_profile)
+- npm run dev
+
+JEST TESTING
+https://jestjs.io/docs/getting-started
+- not quite got the hang of the file dependencies
+- working when function is in standalone file e.g. sum.js, but not when a function within a file, e.g. App.js
+- do we have to create a separate test for every function, as well as the file.test ???
+- this can't be right - would end up with two additional new js files, for every function?!
