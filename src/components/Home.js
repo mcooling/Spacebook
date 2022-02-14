@@ -2,6 +2,7 @@ import React from "react";
 import { Text, TouchableOpacity, View } from "react-native-web";
 import { TextInput } from "react-native";
 import GlobalStyles from "../utils/GlobalStyles";
+import { getAuthToken, deleteAuthToken } from "../utils/AsyncStorage";
 
 // see wk3 ex5 for text input / state
 // implements POST/user endpoint
@@ -19,35 +20,28 @@ class Home extends React.Component {
 
   // todo go through lint warnings with Ash
 
-  // function called by login button
-  loginUser = () => {
-    // create an object to store request body
-    // passed in with fetch
-    // values correspond to the values keyed in the view textinput form
-    // at this point, these are currently the 'temp' values held in state
-
-    const requestBody = {
-      emailAddress: this.state.emailAddress,
-      password: this.state.password,
-    };
-
-    // now have the request body object, we can do the fetch
-    // including header and body, as well as method
-    // have to use stringify, to convert js object to json string
-    return fetch("http://localhost:3333/api/1.0.0/login/", {
+  // function called by logout button
+  logoutUser = async () => {
+    const { token } = await getAuthToken();
+    console.log(token);
+    return fetch("http://localhost:3333/api/1.0.0/logout/", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "X-Authorization": token,
       },
-      body: JSON.stringify(requestBody),
     })
-      .then(() => {
-        // todo navigate to post page
-        console.log("Login successful");
+      .then(async (res) => {
+        if (res.status === 200) {
+          console.log("Logout successful");
+          await deleteAuthToken();
+          this.props.navigation.navigate("Login");
+        } else {
+          throw new Error("Logout failed");
+        }
       })
       .catch((error) => {
         // todo may want to display a modal / alert here?
-        console.log(`Login unsuccessful: ${error}`);
+        console.log(`Logout unsuccessful: ${error}`);
       });
   };
 
@@ -88,6 +82,22 @@ class Home extends React.Component {
           }}
         >
           <Text style={GlobalStyles.buttonText}>MY FRIENDS</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={GlobalStyles.button}
+          onPress={() => {
+            this.props.navigation.navigate("MyProfile");
+          }}
+        >
+          <Text style={GlobalStyles.buttonText}>MY PROFILE</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={GlobalStyles.button}
+          onPress={() => {
+            this.logoutUser();
+          }}
+        >
+          <Text style={GlobalStyles.buttonText}>LOGOUT</Text>
         </TouchableOpacity>
       </View>
     );
