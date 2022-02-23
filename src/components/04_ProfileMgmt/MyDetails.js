@@ -1,22 +1,21 @@
-import React from "react";
-import { Text, TouchableOpacity, View } from "react-native-web";
-import { TextInput } from "react-native";
-import GlobalStyles from "../../utils/GlobalStyles";
-import { getAuthToken, getUserId } from "../../utils/AsyncStorage";
-import { getUserData } from "../../utils/ReusableFunctions";
+import React from 'react';
+import { Text, TouchableOpacity, View } from 'react-native-web';
+import { TextInput } from 'react-native';
+import GlobalStyles from '../../utils/GlobalStyles';
+import { getAuthToken, getUserId } from '../../utils/AsyncStorage';
+import { getUserData } from '../../utils/UtilFunctions';
 
 class MyDetails extends React.Component {
   constructor(props) {
     super(props);
 
-    // todo check with ash. o_ used to compare 'original' vals with updated ones
     this.state = {
-      firstName: "",
-      lastName: "",
-      emailAddress: "",
-      o_firstName: "",
-      o_lastName: "",
-      o_emailAddress: "",
+      firstName: '',
+      lastName: '',
+      emailAddress: '',
+      o_firstName: '',
+      o_lastName: '',
+      o_emailAddress: '',
     };
   }
 
@@ -38,7 +37,7 @@ class MyDetails extends React.Component {
       });
   }
 
-  // called by update button onclick
+  // PATCH/user{user_id}
   updateUserDetails = async () => {
     const token = await getAuthToken();
     const id = await getUserId();
@@ -58,17 +57,17 @@ class MyDetails extends React.Component {
     }
 
     return fetch(`http://localhost:3333/api/1.0.0/user/${id}`, {
-      method: "PATCH",
+      method: 'PATCH',
       headers: {
-        "X-Authorization": token,
-        "Content-Type": "application/json",
+        'X-Authorization': token,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(patchRequestBody),
     })
       .then(() => {
-        console.log("Update successful");
+        console.log('Update successful');
         console.log(
-          "UPDATE HARDCODED EMAIL IN LOGIN.JS, IF YOU JUST CHANGED EMAIL ADDRESS!"
+          'UPDATE HARDCODED EMAIL IN LOGIN.JS, IF YOU JUST CHANGED EMAIL ADDRESS!'
         );
         console.log(patchRequestBody);
       })
@@ -77,12 +76,10 @@ class MyDetails extends React.Component {
       });
   };
 
-  // todo go through lint warnings with Ash
-
   render() {
     return (
       <View>
-        <View style={GlobalStyles.container}>
+        <View style={GlobalStyles.headerContainer}>
           <Text style={GlobalStyles.screenTitle}>MY DETAILS</Text>
         </View>
 
@@ -106,15 +103,15 @@ class MyDetails extends React.Component {
           style={GlobalStyles.button}
           onPress={() => {
             this.updateUserDetails().then(() => {});
-            // this.props.navigation.navigate("Home");
+            this.props.navigation.navigate('MyProfile');
           }}
         >
-          <Text style={GlobalStyles.buttonText}>SUBMIT CHANGES</Text>
+          <Text style={GlobalStyles.buttonText}>SUBMIT</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={GlobalStyles.button}
           onPress={() => {
-            this.props.navigation.navigate("Home");
+            this.props.navigation.navigate('MyProfile');
           }}
         >
           <Text style={GlobalStyles.buttonText}>CANCEL</Text>
