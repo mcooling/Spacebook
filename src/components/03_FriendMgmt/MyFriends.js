@@ -1,8 +1,8 @@
-import React from "react";
-import { Text, TouchableOpacity, View } from "react-native-web";
-import { FlatList, TextInput } from "react-native";
-import GlobalStyles from "../../utils/GlobalStyles";
-import { getUserId, getAuthToken } from "../../utils/AsyncStorage";
+import React from 'react';
+import { Text, TouchableOpacity, View } from 'react-native-web';
+import { FlatList, TextInput } from 'react-native';
+import GlobalStyles from '../../utils/GlobalStyles';
+import { getUserId, getAuthToken, setFriendId } from '../../utils/AsyncStorage';
 
 class MyFriends extends React.Component {
   constructor(props) {
@@ -21,15 +21,14 @@ class MyFriends extends React.Component {
     // todo need to add isLoading - see shopping list
   }
 
-  // todo GET/user/user_id/friends
-  // stumped - view showing 'undefined objects instead of the name (like friend requests)
+  // GET/user/user_id/friends
   getFriends = async () => {
     const token = await getAuthToken();
     const userId = await getUserId();
 
     return fetch(`http://localhost:3333/api/1.0.0/user/${userId}/friends`, {
       headers: {
-        "X-Authorization": token,
+        'X-Authorization': token,
       },
     })
       .then((response) => {
@@ -38,7 +37,7 @@ class MyFriends extends React.Component {
         } // todo need to add error handling conditions for other response codes
       })
       .then((responseJson) => {
-        console.log("GET friends response");
+        console.log('GET/user/user_id/friends response');
         console.log(responseJson);
         this.setState({
           isLoading: false,
@@ -54,9 +53,9 @@ class MyFriends extends React.Component {
   getFriendRequests = async () => {
     const token = await getAuthToken();
 
-    return fetch("http://localhost:3333/api/1.0.0/friendrequests/", {
+    return fetch('http://localhost:3333/api/1.0.0/friendrequests/', {
       headers: {
-        "X-Authorization": token,
+        'X-Authorization': token,
       },
     })
       .then((response) => {
@@ -81,14 +80,14 @@ class MyFriends extends React.Component {
     const token = await getAuthToken();
 
     return fetch(`http://localhost:3333/api/1.0.0/friendrequests/${id}`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "X-Authorization": token,
+        'X-Authorization': token,
       },
     })
       .then((response) => {
         if (response.status === 200) {
-          console.log("Friend request accepted");
+          console.log('Friend request accepted');
           this.getFriendRequests(); // clears down current list
           this.getFriends(); // update friends list with new friend
         } else {
@@ -105,14 +104,14 @@ class MyFriends extends React.Component {
     const token = await getAuthToken();
 
     return fetch(`http://localhost:3333/api/1.0.0/friendrequests/${id}`, {
-      method: "DELETE",
+      method: 'DELETE',
       headers: {
-        "X-Authorization": token,
+        'X-Authorization': token,
       },
     })
       .then((response) => {
         if (response.status === 200) {
-          console.log("Friend request rejected");
+          console.log('Friend request rejected');
           this.getFriendRequests(); // clears down current list
         } else {
           console.log(response.status);
@@ -133,7 +132,7 @@ class MyFriends extends React.Component {
     }
     return (
       <View>
-        <View style={GlobalStyles.container}>
+        <View style={GlobalStyles.headerContainer}>
           <Text style={GlobalStyles.screenTitle}>FRIENDS</Text>
         </View>
 
@@ -143,8 +142,15 @@ class MyFriends extends React.Component {
             data={this.state.friends}
             renderItem={({ item }) => (
               <View>
-                <Text style={GlobalStyles.textInput}>
-                  {`${item.first_name} ${item.last_name}`}
+                <Text
+                  style={GlobalStyles.textInput}
+                  onPress={() => {
+                    setFriendId(item.user_id);
+                    console.log(item);
+                    this.props.navigation.navigate('FriendProfile');
+                  }}
+                >
+                  {`${item.user_givenname} ${item.user_familyname}`}
                 </Text>
               </View>
             )}
@@ -182,22 +188,6 @@ class MyFriends extends React.Component {
             keyExtractor={(item) => item.user_id.toString()}
           />
         </View>
-        <TouchableOpacity
-          style={GlobalStyles.button}
-          onPress={() => {
-            this.props.navigation.navigate("AddFriends");
-          }}
-        >
-          <Text style={GlobalStyles.buttonText}>ADD FRIEND</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={GlobalStyles.button}
-          onPress={() => {
-            this.props.navigation.navigate("Home");
-          }}
-        >
-          <Text style={GlobalStyles.buttonText}>HOME</Text>
-        </TouchableOpacity>
       </View>
     );
   }
