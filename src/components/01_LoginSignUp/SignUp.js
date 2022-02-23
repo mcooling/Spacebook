@@ -1,7 +1,7 @@
-import React from "react";
-import { Text, TouchableOpacity, View } from "react-native-web";
-import { TextInput } from "react-native";
-import GlobalStyles from "../../utils/GlobalStyles";
+import React from 'react';
+import { Text, TouchableOpacity, View } from 'react-native-web';
+import { TextInput } from 'react-native';
+import GlobalStyles from '../../utils/GlobalStyles';
 
 // see wk3 ex5 for text input / state
 // implements POST/user endpoint
@@ -12,20 +12,20 @@ class SignUp extends React.Component {
     super(props);
 
     this.state = {
-      firstName: "",
-      lastName: "",
-      emailAddress: "",
-      password: "",
+      firstName: '',
+      lastName: '',
+      emailAddress: '',
+      password: '',
     };
   }
 
   // function called by sign up button
   // implements POST/user API call
   createAccount = () => {
-    return fetch("http://localhost:3333/api/1.0.0/user/", {
-      method: "POST",
+    return fetch('http://localhost:3333/api/1.0.0/user/', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         first_name: this.state.firstName,
@@ -37,8 +37,8 @@ class SignUp extends React.Component {
       .then((response) => response.json())
       .then((json) => {
         console.log(json);
-        console.log("Signup successful");
-        this.props.navigation.navigate("Login");
+        console.log('Signup successful');
+        this.props.navigation.navigate('Login');
       })
       .catch((error) => {
         // todo may want to display a modal / alert here?
@@ -49,8 +49,8 @@ class SignUp extends React.Component {
   render() {
     return (
       <View>
-        <View style={GlobalStyles.container}>
-          <Text style={GlobalStyles.screenTitle}>SIGNUP PAGE</Text>
+        <View style={GlobalStyles.headerContainer}>
+          <Text style={GlobalStyles.screenTitle}>SIGNUP</Text>
         </View>
         <TextInput
           placeholder="First Name: "
@@ -77,22 +77,24 @@ class SignUp extends React.Component {
           style={GlobalStyles.textInput}
           secureTextEntry
         />
-        <TouchableOpacity
-          style={GlobalStyles.button}
-          onPress={() => {
-            this.createAccount();
-          }}
-        >
-          <Text style={GlobalStyles.buttonText}>SIGNUP</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={GlobalStyles.button}
-          onPress={() => {
-            this.props.navigation.navigate("Login");
-          }}
-        >
-          <Text style={GlobalStyles.buttonText}>LOGIN</Text>
-        </TouchableOpacity>
+        <View style={GlobalStyles.smallButtonContainer}>
+          <TouchableOpacity
+            style={GlobalStyles.smallButton}
+            onPress={() => {
+              this.createAccount();
+            }}
+          >
+            <Text style={GlobalStyles.buttonText}>SIGNUP</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={GlobalStyles.smallButton}
+            onPress={() => {
+              this.props.navigation.navigate('Login');
+            }}
+          >
+            <Text style={GlobalStyles.buttonText}>LOGIN</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
