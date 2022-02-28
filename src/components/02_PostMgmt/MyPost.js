@@ -12,28 +12,40 @@ class MyPost extends React.Component {
       post: {},
       textValue: '',
       o_textValue: '',
+      userId: 0,
+      postId: 0,
     };
   }
-
-  handleClick = (e) => {
-    e.target.select();
-  };
 
   componentDidMount() {
     this.viewPost();
   }
 
+  // todo i think view and edit are now just about working! check with ash...
+
   // GET/user/{user_id}/post/{post_id}
   viewPost = async () => {
     const token = await getAuthToken();
-    const id = await getUserId();
-    const postId = await getPostId();
 
-    return fetch(`http://localhost:3333/api/1.0.0/user/${id}/post/${postId}`, {
-      headers: {
-        'X-Authorization': token,
-      },
-    })
+    console.log('I am here');
+
+    const user_id = this.props.route.params.p_userId;
+    const user_postId = this.props.route.params.p_userPostId;
+    console.log(`user details: userid ${user_id} postid ${user_postId}`);
+
+    this.setState({
+      userId: user_id,
+      postId: user_postId,
+    });
+
+    return fetch(
+      `http://localhost:3333/api/1.0.0/user/${this.state.userId}/post/${this.state.postId}`,
+      {
+        headers: {
+          'X-Authorization': token,
+        },
+      }
+    )
       .then((response) => {
         if (response.status === 200) {
           return response.json();
@@ -67,14 +79,17 @@ class MyPost extends React.Component {
       updatedText.text = this.state.textValue;
     }
 
-    return fetch(`http://localhost:3333/api/1.0.0/user/${id}/post/${postId}`, {
-      method: 'PATCH',
-      headers: {
-        'X-Authorization': token,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updatedText),
-    })
+    return fetch(
+      `http://localhost:3333/api/1.0.0/user/${this.state.userId}/post/${this.state.postId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'X-Authorization': token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedText),
+      }
+    )
       .then(() => {
         console.log('Update successful');
         console.log(updatedText);
@@ -141,7 +156,7 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     borderColor: '#bdbed9',
     borderWidth: 1,
-    outlineStyle: 'none',
+    // outlineStyle: 'none',
   },
   textInputContainer: {
     paddingHorizontal: 20,
