@@ -1,14 +1,9 @@
 import React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native-web';
-import { FlatList, ScrollView, StyleSheet, TextInput } from 'react-native';
+import { FlatList, ScrollView, StyleSheet } from 'react-native';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { getUserData, getProfilePhoto } from '../../utils/UtilFunctions';
-import {
-  getAuthToken,
-  getUserId,
-  getPostId,
-  setPostId,
-} from '../../utils/AsyncStorage';
+import { getAuthToken, getUserId, getPostId } from '../../utils/AsyncStorage';
 
 class MyProfile extends React.Component {
   constructor(props) {
@@ -26,8 +21,7 @@ class MyProfile extends React.Component {
 
   componentDidMount() {
     this.unsubscribe = this.props.navigation.addListener('focus', () => {
-      // let user_id = this.route.params.user_id;
-      console.log("I'm HERE!!!", this.route);
+      // console.log("I'm HERE!!!", this.route);
       getProfilePhoto()
         .then((response) => {
           return response.blob();
@@ -92,6 +86,8 @@ class MyProfile extends React.Component {
       });
   };
 
+  // todo have another look at this. not sure why there's two vars for post id
+  // todo still not refreshing consistently, real time
   // DELETE/user/{user_id}/post/{post_id}
   deletePost = async (post_id) => {
     const token = await getAuthToken();
@@ -112,6 +108,7 @@ class MyProfile extends React.Component {
           this.getPosts(); // refreshes posts
         } else {
           console.log(response.status);
+          console.log(`User Id: ${this.id}`);
         }
       })
       .catch((error) => {
@@ -130,8 +127,12 @@ class MyProfile extends React.Component {
           </View>
           <Text
             style={GlobalStyles.textInput}
-            onPress={() => {
-              this.props.navigation.navigate('AddPost');
+            onPress={async () => {
+              const profileId = await getUserId();
+              console.log(`profile id${profileId}`);
+              this.props.navigation.navigate('AddPost', {
+                profileId,
+              });
             }}
           >
             What's on your mind?
@@ -182,13 +183,23 @@ class MyProfile extends React.Component {
                     <View style={styles.buttonContainer}>
                       <TouchableOpacity
                         style={styles.editPostButton}
-                        onPress={() => {
-                          setPostId(item.post_id);
-                          this.props.navigation.navigate('MyPost');
+                        onPress={async () => {
+                          const p_userId = await getUserId();
+                          const p_userPostId = await getPostId();
+                          console.log(
+                            `user id ${p_userId} post id ${p_userPostId}`
+                          );
+                          this.props.navigation.navigate('MyPost', {
+                            p_userId,
+                            p_userPostId,
+                          });
                         }}
                       >
                         <Text style={styles.editButtonText}>EDIT</Text>
                       </TouchableOpacity>
+
+                      {/* todo delete is broken on lennon (seems fine on others)
+                      - linked to likes? */}
                       <TouchableOpacity
                         // todo need an 'are you sure' alert/modal here
                         style={styles.deletePostButton}
