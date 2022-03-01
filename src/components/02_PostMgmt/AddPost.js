@@ -16,7 +16,9 @@ class AddPost extends React.Component {
   // GET/user/user_id/post
   addPost = async () => {
     const token = await getAuthToken();
-    const userId = await getUserId();
+    // const userId = await getUserId();
+    const userId = this.props.route.params.profileId;
+    console.log(`UserId HERE ${userId}`);
 
     return fetch(`http://localhost:3333/api/1.0.0/user/${userId}/post`, {
       method: 'POST',
@@ -97,7 +99,7 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     borderColor: '#bdbed9',
     borderWidth: 1,
-    outlineStyle: 'none',
+    // outlineStyle: 'none',
   },
 });
 
