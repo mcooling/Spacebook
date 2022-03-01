@@ -54,12 +54,10 @@ class FriendProfile extends React.Component {
             lastName: responseJson.last_name,
             friendId: responseJson.user_id,
           });
-          // console.log(`My friend id is: ${this.state.friendId}`);
         })
         .catch((error) => {
           console.log(error);
         });
-      this.getPosts();
       this.friendMatch();
     });
   }
@@ -68,80 +66,8 @@ class FriendProfile extends React.Component {
     this.unsubscribe();
   }
 
-  // fetches all posts for the friend id
-  // GET/user/{user_id}/post
-  // todo why isn't this working when accessing friendId from state?
-  // setting state in getFriendData, but looks like this is being called first
-  getPosts = async () => {
-    const token = await getAuthToken();
-    const friendId = await getFriendId();
-    // const { friendId } = this.state;
-
-    return fetch(`http://localhost:3333/api/1.0.0/user/${friendId}/post`, {
-      headers: {
-        'X-Authorization': token,
-      },
-    })
-      .then((response) => {
-        if (response.status === 200) {
-          return response.json();
-        } // todo need to add error handling conditions for other response codes
-      })
-      .then((responseJson) => {
-        // console.log("GET/user/user_id/post response");
-        // console.log(responseJson);
-        // console.log(responseJson.friendId);
-        this.setState({
-          isLoading: false,
-          postList: responseJson,
-        });
-        console.log(`friend post objects: ${JSON.stringify(responseJson)}`);
-        // console.log(`Friend post text: ${responseJson.text}`);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  // POST/user/{user_id}/friends
-  // id is their id, not yours
-  // todo error on friend profile
-  // assuming because they're not a friend yet, so no posts visible?
-  // do i need a check then, to only fetch posts if they're a friend?
-  // another use case for checking if user id already a friend?
-
-  sendFriendRequest = async () => {
-    const token = await getAuthToken();
-    const friendId = getFriendId();
-    // const friendId = this.props.route.params.profileId;
-    console.log(`Friend id ${friendId}`);
-
-    return fetch(`http://localhost:3333/api/1.0.0/user/${friendId}/friends`, {
-      method: 'POST',
-      headers: {
-        'X-Authorization': token,
-      },
-    })
-      .then((response) => response.json())
-      .then((responseJson) => {
-        console.log(responseJson);
-        // console.log(`Friend request sent to ${responseJson.first_name}
-        // ${responseJson.lastName} ID: ${responseJson.user_id}`);
-      })
-      .catch((error) => {
-        console.log(`Post unsuccessful: ${error}`);
-      });
-  };
-
-  // function to check if friend profile id is one of my friends
-  // todo can't get the friend check to work - won't return true boolean
+  // function to check if user is a friend
   friendMatch = async () => {
-    // get list of friends and update friendList array
-    // loop through friend list
-    // if there's a match, set this.state.friendMatch value to true
-    // add friend button only rendered where friendmatch == false
-    // https://careerkarma.com/blog/javascript-array-contains/
-
     const token = await getAuthToken();
     const myId = await getUserId();
     const profileId = await getFriendId();
@@ -163,25 +89,101 @@ class FriendProfile extends React.Component {
         console.log('Hello, you have reached friendMatch');
         console.log(`The profile id is: ${profileId}`);
 
-        // todo isn't returning expected result - true
-        // returning false, expecting it to return true
-        const checkFriend = this.state.friendList.some(
-          (friend) => friend.user_id === profileId
-        );
+        const friendArray = this.state.friendList;
+        console.log(friendArray);
+
+        const checkFriend = friendArray.some(function (userId) {
+          return userId.user_id == profileId;
+        });
+
+        console.log(checkFriend);
+
+        // const checkFriend = this.state.friendList.includes(profileId);
         console.log(`checkFriend function response: ${checkFriend}`);
 
-        if (!checkFriend) {
-          console.log('Please be my friend');
-        } else {
+        if (checkFriend) {
           console.log('Thanks for being my friend');
           this.setState({
             alreadyFriend: true,
+          });
+          this.getPosts();
+        } else {
+          console.log('Please be my friend');
+          this.setState({
+            alreadyFriend: false,
           });
         }
       })
       .catch((error) => {
         console.log(`Post unsuccessful: ${error}`);
       });
+  };
+
+  // GET/user/{user_id}/post
+  // todo not displaying posts...think it's linked to conditional rendering
+  getPosts = async () => {
+    const token = await getAuthToken();
+    const friendId = await getFriendId();
+    // const { friendId } = this.state;
+
+    return fetch(`http://localhost:3333/api/1.0.0/user/${friendId}/post`, {
+      headers: {
+        'X-Authorization': token,
+      },
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          return response.json();
+        } // todo need to add error handling conditions for other response codes
+      })
+      .then((responseJson) => {
+        this.setState({
+          isLoading: false,
+          postList: responseJson,
+        });
+        console.log(`friend post objects: ${JSON.stringify(responseJson)}`);
+        // console.log(`Friend post text: ${responseJson.text}`);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  // POST/user/{user_id}/friends
+  // id is their id, not yours
+  sendFriendRequest = async () => {
+    const token = await getAuthToken();
+    const friendId = await getFriendId();
+    // const friendId = this.props.route.params.profileId;
+    console.log(`Friend id ${friendId}`);
+
+    return (
+      fetch(`http://localhost:3333/api/1.0.0/user/${friendId}/friends`, {
+        method: 'POST',
+        headers: {
+          'X-Authorization': token,
+        },
+      })
+        // .then((response) => response.json())
+        // .then((responseJson) => {
+        //   console.log(responseJson);
+        //   console.log(
+        //     `Friend request sent to ${responseJson.first_name} ${responseJson.lastName} ID: ${responseJson.user_id}`
+        //   );
+        // })
+        .then((response) => {
+          // console.log(response.status);
+          if (response.status === 201) {
+            console.log('Your friend request has been sent');
+          } // todo need to add error handling conditions for other response codes
+          if (response.status === 403) {
+            console.log('User is already added by a friend');
+          }
+        })
+        .catch((error) => {
+          console.log(`Post unsuccessful: ${error}`);
+        })
+    );
   };
 
   render() {
@@ -208,59 +210,50 @@ class FriendProfile extends React.Component {
           >{`${this.state.firstName.toUpperCase()} ${this.state.lastName.toUpperCase()}`}</Text>
 
           <View style={GlobalStyles.smallButtonContainer}>
-            <TouchableOpacity
-              style={GlobalStyles.smallButton}
-              onPress={async () => {
-                const profileId = await getFriendId();
-                console.log(`profile id${profileId}`);
-                this.props.navigation.navigate('AddPost', {
-                  profileId,
-                });
-              }}
-            >
-              <Text style={GlobalStyles.buttonText}>ADD POST</Text>
-            </TouchableOpacity>
-
-            {/* todo linked to friendMatch bug - not rendering as friend state not matching properly
-
-            https://stackoverflow.com/questions/8217419/how-to-determine-if-
-            javascript-array-contains-an-object-with-an-attribute-that-e */}
-
-            {this.state.alreadyFriend == false ? (
+            {this.state.alreadyFriend == true ? (
+              <TouchableOpacity
+                style={GlobalStyles.smallButton}
+                onPress={async () => {
+                  const profileId = await getFriendId();
+                  console.log(`profile id${profileId}`);
+                  this.props.navigation.navigate('AddPost', {
+                    profileId,
+                  });
+                }}
+              >
+                <Text style={GlobalStyles.buttonText}>ADD POST</Text>
+              </TouchableOpacity>
+            ) : (
               <TouchableOpacity
                 style={GlobalStyles.smallButton}
                 onPress={() => {
-                  this.sendFriendRequest().then(() => {});
+                  this.sendFriendRequest();
                 }}
               >
                 <Text style={GlobalStyles.buttonText}>ADD FRIEND</Text>
               </TouchableOpacity>
-            ) : null}
+            )}
           </View>
 
-          <View style={GlobalStyles.container}>
-            <Text style={GlobalStyles.sectionHeader}>My Posts</Text>
-            <View>
-              <FlatList
-                data={this.state.postList}
-                renderItem={({ item }) => (
-                  <View style={styles.container}>
-                    <PostManager
-                      friendPost={item}
-                      navigation={this.props.navigation}
-                    />
-                  </View>
-                )}
-                keyExtractor={(item) => item.post_id.toString()}
-              />
+          {this.state.alreadyFriend == true ? (
+            <View style={GlobalStyles.container}>
+              <Text style={GlobalStyles.sectionHeader}>My Posts</Text>
+              <View>
+                <FlatList
+                  data={this.state.postList}
+                  renderItem={({ item }) => (
+                    <View style={styles.container}>
+                      <PostManager
+                        friendPost={item}
+                        navigation={this.props.navigation}
+                      />
+                    </View>
+                  )}
+                  keyExtractor={(item) => item.post_id.toString()}
+                />
+              </View>
             </View>
-
-            <Text>Add, update, delete post functionality</Text>
-            <Text>Like / remove like functionality</Text>
-            <Text>
-              {'\n'}'Send Friend Request' only when user not a friend?
-            </Text>
-          </View>
+          ) : null}
         </View>
       );
     }
