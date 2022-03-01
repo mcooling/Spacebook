@@ -13,7 +13,7 @@ export const setAuthToken = async (value) => {
 export const getUserId = async () => {
   try {
     const userId = await AsyncStorage.getItem('@user_id');
-    console.log(`get user id = ${userId}`);
+    // console.log(`get user id = ${userId}`);
     return userId;
   } catch (error) {
     console.error(error);
@@ -24,7 +24,7 @@ export const getUserId = async () => {
 export const setUserId = async (value) => {
   try {
     await AsyncStorage.setItem('@user_id', value);
-    console.log(`set user id = ${value}`);
+    // console.log(`set user id = ${value}`);
   } catch (error) {
     console.error(error);
   }
@@ -34,7 +34,7 @@ export const setUserId = async (value) => {
 export const setFriendId = async (value) => {
   try {
     await AsyncStorage.setItem('@friend_id', value);
-    console.log(`set friend id = ${value}`);
+    // console.log(`set friend id = ${value}`);
   } catch (error) {
     console.error(error);
   }
@@ -44,7 +44,7 @@ export const setFriendId = async (value) => {
 export const getFriendId = async () => {
   try {
     const friendId = await AsyncStorage.getItem('@friend_id');
-    console.log(`get friend id = ${friendId}`);
+    // console.log(`get friend id = ${friendId}`);
     return friendId;
   } catch (error) {
     console.error(error);
