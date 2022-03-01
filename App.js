@@ -11,7 +11,6 @@ const Stack = createNativeStackNavigator();
 
 class App extends React.Component {
   render() {
-    // todo check in with ash on nav structures
     return (
       <NavigationContainer>
         <Stack.Navigator
