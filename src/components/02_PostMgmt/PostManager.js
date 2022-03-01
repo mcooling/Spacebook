@@ -38,6 +38,7 @@ class PostManager extends React.Component {
     });
   };
 
+  // GET/user/friend_id/post
   getPosts = async () => {
     const token = await getAuthToken();
     const friendId = await getFriendId();
@@ -101,6 +102,7 @@ class PostManager extends React.Component {
       });
   };
 
+  // DELETE/user/user_id/post/post_id/like
   removeLike = async () => {
     const token = await getAuthToken();
     const friendId = await getFriendId();
@@ -178,7 +180,6 @@ class PostManager extends React.Component {
               Hi {this.state.firstName}, this is your post so you can edit or
               delete, using the buttons below:-)
             </Text>
-            {/* todo edit post not working - nav error thrown in console */}
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={styles.editPostButton}

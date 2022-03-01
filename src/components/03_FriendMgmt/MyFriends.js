@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native-web';
-import { FlatList, TextInput } from 'react-native';
+import { FlatList } from 'react-native';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { getUserId, getAuthToken, setFriendId } from '../../utils/AsyncStorage';
 
@@ -37,8 +37,9 @@ class MyFriends extends React.Component {
         } // todo need to add error handling conditions for other response codes
       })
       .then((responseJson) => {
-        console.log('GET/user/user_id/friends response');
-        console.log(responseJson);
+        // console.log(`My user id: ${userId}`);
+        // console.log('GET/user/user_id/friends response');
+        // console.log(responseJson);
         this.setState({
           isLoading: false,
           friends: responseJson,
@@ -64,7 +65,7 @@ class MyFriends extends React.Component {
         } // todo need to add error handling conditions for other response codes
       })
       .then((responseJson) => {
-        console.log(responseJson);
+        // console.log(responseJson);
         this.setState({
           isLoading: false,
           friendRequests: responseJson,
@@ -87,7 +88,7 @@ class MyFriends extends React.Component {
     })
       .then((response) => {
         if (response.status === 200) {
-          console.log('Friend request accepted');
+          // console.log('Friend request accepted');
           this.getFriendRequests(); // clears down current list
           this.getFriends(); // update friends list with new friend
         } else {
@@ -111,7 +112,7 @@ class MyFriends extends React.Component {
     })
       .then((response) => {
         if (response.status === 200) {
-          console.log('Friend request rejected');
+          // console.log('Friend request rejected');
           this.getFriendRequests(); // clears down current list
         } else {
           console.log(response.status);
@@ -137,7 +138,6 @@ class MyFriends extends React.Component {
         </View>
 
         <View style={GlobalStyles.container}>
-          <Text style={GlobalStyles.screenTitle}>My Friends</Text>
           <FlatList
             data={this.state.friends}
             renderItem={({ item }) => (
@@ -146,7 +146,7 @@ class MyFriends extends React.Component {
                   style={GlobalStyles.textInput}
                   onPress={() => {
                     setFriendId(item.user_id);
-                    console.log(item);
+                    // console.log(item);
                     this.props.navigation.navigate('FriendProfile');
                   }}
                 >

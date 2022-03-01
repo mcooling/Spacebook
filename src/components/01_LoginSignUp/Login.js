@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native-web';
-import { TextInput } from 'react-native';
+import { TextInput, StyleSheet } from 'react-native';
+import AwesomeAlert from 'react-native-awesome-alerts';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { setAuthToken, setUserId } from '../../utils/AsyncStorage';
 
@@ -9,8 +10,9 @@ class Login extends React.Component {
     super(props);
 
     this.state = {
-      emailAddress: 'marc@cooling.com',
+      emailAddress: 'thom@yorke.com',
       password: 'hello123',
+      showAlert: false,
     };
   }
 
@@ -24,7 +26,6 @@ class Login extends React.Component {
         headers: {
           'Content-Type': 'application/json',
         },
-        // note to self: left-hand key must match the API spec
         body: JSON.stringify({
           email: this.state.emailAddress,
           password: this.state.password,
@@ -37,18 +38,34 @@ class Login extends React.Component {
           console.log(json);
           setUserId(json.id).then(() => {
             setAuthToken(json.token).then(() => {
+              // eslint-disable-next-line react/prop-types
               this.props.navigation.navigate('Main');
             });
           });
         })
         .catch((error) => {
-          // todo may want to display a modal / alert here?
+          // todo modal working but can't suss flex / positioning?
+          this.showAlert();
           console.log(`Login unsuccessful: ${error}`);
         })
     );
   };
 
+  showAlert = () => {
+    this.setState({
+      showAlert: true,
+    });
+  };
+
+  hideAlert = () => {
+    this.setState({
+      showAlert: false,
+    });
+  };
+
   render() {
+    const { showAlert } = this.state;
+
     return (
       <View>
         <View style={GlobalStyles.headerContainer}>
@@ -85,9 +102,56 @@ class Login extends React.Component {
             <Text style={GlobalStyles.buttonText}>SIGN UP</Text>
           </TouchableOpacity>
         </View>
+        <View style={styles.container}>
+          <AwesomeAlert
+            show={showAlert}
+            showProgress={false}
+            title="Login Failed"
+            titleStyle={styles.titleText}
+            message="Please enter correct username / password and try again"
+            messageStyle={styles.messageText}
+            closeOnTouchOutside
+            closeOnHardwareBackPress={false}
+            showConfirmButton
+            confirmText="OK"
+            confirmButtonStyle={styles.confirmButton}
+            confirmButtonTextStyle={styles.confirmButtonText}
+            onConfirmPressed={() => {
+              this.hideAlert();
+            }}
+          />
+        </View>
       </View>
     );
   }
 }
 
 export default Login;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  messageText: {
+    color: '#23341c',
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  titleText: {
+    color: '#23341c',
+    fontSize: 20,
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  confirmButton: {
+    width: 100,
+    textAlign: 'center',
+    backgroundColor: '#45732b',
+  },
+  confirmButtonText: {
+    fontWeight: 'bold',
+    fontSize: 17,
+  },
+});
