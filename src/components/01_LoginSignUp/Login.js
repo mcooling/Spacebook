@@ -1,11 +1,19 @@
-import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native-web';
-import { TextInput, StyleSheet } from 'react-native';
+import React, { Component } from 'react';
+import {
+  TextInput,
+  Text,
+  TouchableOpacity,
+  View,
+  StyleSheet,
+} from 'react-native';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { setAuthToken, setUserId } from '../../utils/AsyncStorage';
 
-class Login extends React.Component {
+/**
+ * Handles user login screen
+ */
+class Login extends Component {
   constructor(props) {
     super(props);
 
@@ -15,41 +23,6 @@ class Login extends React.Component {
       showAlert: false,
     };
   }
-
-  // todo check lint warnings with ash
-
-  // function called by login button
-  loginUser = () => {
-    return (
-      fetch('http://localhost:3333/api/1.0.0/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: this.state.emailAddress,
-          password: this.state.password,
-        }),
-      })
-        // todo do i need to chain setters in this way? looks confusing
-        .then((response) => response.json())
-        .then((json) => {
-          console.log('Login successful');
-          console.log(json);
-          setUserId(json.id).then(() => {
-            setAuthToken(json.token).then(() => {
-              // eslint-disable-next-line react/prop-types
-              this.props.navigation.navigate('Main');
-            });
-          });
-        })
-        .catch((error) => {
-          // todo modal working but can't suss flex / positioning?
-          this.showAlert();
-          console.log(`Login unsuccessful: ${error}`);
-        })
-    );
-  };
 
   showAlert = () => {
     this.setState({
@@ -61,6 +34,41 @@ class Login extends React.Component {
     this.setState({
       showAlert: false,
     });
+  };
+
+  // function to be called from default class (no args)
+
+  /**
+   * Function to log in user
+   * @returns POST/login API response
+   * Sets user id and auth token in AsyncStorage
+   */
+  loginUser = () => {
+    return fetch('http://localhost:3333/api/1.0.0/login/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: this.state.emailAddress,
+        password: this.state.password,
+      }),
+    })
+      .then((response) => response.json())
+      .then((json) => {
+        console.log('Login successful');
+        console.log(json);
+        setUserId(json.id).then(() => {
+          setAuthToken(json.token).then(() => {
+            // eslint-disable-next-line react/prop-types
+            this.props.navigation.navigate('Main');
+          });
+        });
+      })
+      .catch((error) => {
+        this.showAlert();
+        console.log(`Login unsuccessful: ${error}`);
+      });
   };
 
   render() {
@@ -102,25 +110,23 @@ class Login extends React.Component {
             <Text style={GlobalStyles.buttonText}>SIGN UP</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.container}>
-          <AwesomeAlert
-            show={showAlert}
-            showProgress={false}
-            title="Login Failed"
-            titleStyle={styles.titleText}
-            message="Please enter correct username / password and try again"
-            messageStyle={styles.messageText}
-            closeOnTouchOutside
-            closeOnHardwareBackPress={false}
-            showConfirmButton
-            confirmText="OK"
-            confirmButtonStyle={styles.confirmButton}
-            confirmButtonTextStyle={styles.confirmButtonText}
-            onConfirmPressed={() => {
-              this.hideAlert();
-            }}
-          />
-        </View>
+        <AwesomeAlert
+          show={showAlert}
+          showProgress={false}
+          title="Login Failed"
+          titleStyle={styles.titleText}
+          message="Please enter correct username / password and try again"
+          messageStyle={styles.messageText}
+          closeOnTouchOutside
+          closeOnHardwareBackPress={false}
+          showConfirmButton
+          confirmText="OK"
+          confirmButtonStyle={styles.confirmButton}
+          confirmButtonTextStyle={styles.confirmButtonText}
+          onConfirmPressed={() => {
+            this.hideAlert();
+          }}
+        />
       </View>
     );
   }
