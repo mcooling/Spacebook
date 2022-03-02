@@ -1,6 +1,14 @@
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native-web';
-import { FlatList, ScrollView, StyleSheet } from 'react-native';
+import {
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import AwesomeAlert from 'react-native-awesome-alerts';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { getUserData, getProfilePhoto } from '../../utils/UtilFunctions';
 import { getAuthToken, getUserId, getPostId } from '../../utils/AsyncStorage';
@@ -16,6 +24,7 @@ class MyProfile extends React.Component {
       photo: null,
       isLoading: true,
       postList: [],
+      showAlert: false,
     };
   }
 
@@ -58,6 +67,18 @@ class MyProfile extends React.Component {
     this.unsubscribe();
   }
 
+  showAlert = () => {
+    this.setState({
+      showAlert: true,
+    });
+  };
+
+  hideAlert = () => {
+    this.setState({
+      showAlert: false,
+    });
+  };
+
   // GET/user/{user_id}/post
   getPosts = async () => {
     const token = await getAuthToken();
@@ -74,8 +95,8 @@ class MyProfile extends React.Component {
         } // todo need to add error handling conditions for other response codes
       })
       .then((responseJson) => {
-        // console.log("GET/user/user_id/post response");
-        // console.log(responseJson);
+        console.log('GET/user/user_id/post response');
+        console.log(responseJson);
         this.setState({
           isLoading: false,
           postList: responseJson,
@@ -116,9 +137,9 @@ class MyProfile extends React.Component {
       });
   };
 
-  // todo is the takeaway from this is that every screen with a view needs 'isLoading'??
-  // todo need to sort pagination of posts, and formatting of text display for each post
   render() {
+    const { showAlert } = this.state;
+
     if (!this.state.isLoading) {
       return (
         <ScrollView>
@@ -171,7 +192,6 @@ class MyProfile extends React.Component {
               <Text style={GlobalStyles.buttonText}>UPDATE PHOTO</Text>
             </TouchableOpacity>
           </View>
-
           <View style={GlobalStyles.container}>
             <Text style={GlobalStyles.sectionHeader}>My Posts</Text>
             <View>
@@ -185,7 +205,7 @@ class MyProfile extends React.Component {
                         style={styles.editPostButton}
                         onPress={async () => {
                           const p_userId = await getUserId();
-                          const p_userPostId = await getPostId();
+                          const p_userPostId = item.post_id;
                           console.log(
                             `user id ${p_userId} post id ${p_userPostId}`
                           );
@@ -197,14 +217,11 @@ class MyProfile extends React.Component {
                       >
                         <Text style={styles.editButtonText}>EDIT</Text>
                       </TouchableOpacity>
-
-                      {/* todo delete is broken on lennon (seems fine on others)
-                      - linked to likes? */}
                       <TouchableOpacity
-                        // todo need an 'are you sure' alert/modal here
                         style={styles.deletePostButton}
                         onPress={() => {
-                          this.deletePost(item.post_id).then(() => {});
+                          this.showAlert();
+                          // this.deletePost(item.post_id).then(() => {});
                         }}
                       >
                         <Text style={styles.deleteButtonText}>DELETE</Text>
@@ -216,6 +233,32 @@ class MyProfile extends React.Component {
               />
             </View>
           </View>
+
+          <AwesomeAlert
+            show={showAlert}
+            showProgress={false}
+            title="Delete Warning!"
+            titleStyle={styles.titleText}
+            message="Are you sure you want to delete this post? Once deleted, it cannot be recovered."
+            messageStyle={styles.messageText}
+            closeOnTouchOutside
+            closeOnHardwareBackPress={false}
+            showConfirmButton
+            confirmText="OK"
+            confirmButtonStyle={styles.confirmButton}
+            confirmButtonTextStyle={styles.confirmButtonText}
+            showCancelButton
+            cancelText="Cancel"
+            cancelButtonStyle={styles.confirmButton}
+            cancelButtonTextStyle={styles.confirmButtonText}
+            onConfirmPressed={() => {
+              this.deletePost(item.post_id).then(() => {});
+              this.hideAlert();
+            }}
+            onCancelPressed={() => {
+              this.hideAlert();
+            }}
+          />
         </ScrollView>
       );
     }
