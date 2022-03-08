@@ -1,9 +1,22 @@
 import React from 'react';
-import { Text, TouchableOpacity, StyleSheet, View } from 'react-native-web';
-import { TextInput } from 'react-native';
+import {
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  View,
+  TextInput,
+} from 'react-native';
 import GlobalStyles from '../../utils/GlobalStyles';
-import { getUserId, getAuthToken, setPostId } from '../../utils/AsyncStorage';
+import {
+  getAuthToken,
+  setPostId,
+  addDraftPost,
+  getDraftPost,
+} from '../../utils/AsyncStorage';
 
+/**
+ * handles add post, to user & friend profiles
+ */
 class AddPost extends React.Component {
   constructor(props) {
     super(props);
@@ -13,10 +26,11 @@ class AddPost extends React.Component {
     };
   }
 
-  // GET/user/user_id/post
+  /**
+   * @returns POST/user/user_id/post API call
+   */
   addPost = async () => {
     const token = await getAuthToken();
-    // const userId = await getUserId();
     const userId = this.props.route.params.profileId;
     console.log(`UserId HERE ${userId}`);
 
@@ -50,7 +64,6 @@ class AddPost extends React.Component {
         <View style={GlobalStyles.headerContainer}>
           <Text style={GlobalStyles.screenTitle}>ADD POST</Text>
         </View>
-
         <View style={styles.container}>
           <TextInput
             style={styles.textInput}
@@ -63,24 +76,42 @@ class AddPost extends React.Component {
             value={this.state.postText}
           />
         </View>
-
-        <View style={GlobalStyles.smallButtonContainer}>
+        <View style={styles.smallButtonContainer}>
           <TouchableOpacity
-            style={GlobalStyles.smallButton}
+            style={styles.addPostButton}
             onPress={() => {
               this.addPost();
-              this.props.navigation.navigate('MyProfile');
             }}
           >
             <Text style={GlobalStyles.buttonText}>POST</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={GlobalStyles.smallButton}
+            style={styles.addPostButton}
             onPress={() => {
               this.props.navigation.navigate('MyProfile');
             }}
           >
             <Text style={GlobalStyles.buttonText}>CANCEL</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.smallButtonContainer}>
+          {/* todo handles draft post function - extension task */}
+          <TouchableOpacity
+            style={styles.draftPostButton}
+            onPress={() => {
+              addDraftPost(this.state.postText);
+              this.setState({ postText: '' });
+            }}
+          >
+            <Text style={GlobalStyles.buttonText}>SAVE TO DRAFT</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.draftPostButton}
+            onPress={() => {
+              this.props.navigation.navigate('DraftPosts');
+            }}
+          >
+            <Text style={GlobalStyles.buttonText}>VIEW DRAFTS</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -92,6 +123,29 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
     marginTop: 20,
+  },
+  addPostButton: {
+    alignItems: 'center',
+    width: 170,
+    // backgroundColor: '#6369b8',
+    backgroundColor: '#4453ce',
+    padding: 10,
+    marginTop: 20,
+    borderRadius: 5,
+  },
+  draftPostButton: {
+    alignItems: 'center',
+    width: 170,
+    // backgroundColor: '#6369b8',
+    backgroundColor: '#744772',
+    padding: 10,
+    marginTop: 20,
+    borderRadius: 5,
+  },
+  smallButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    marginHorizontal: 10,
   },
   textInput: {
     fontSize: 17,
