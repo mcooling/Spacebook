@@ -1,9 +1,20 @@
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native-web';
-import { FlatList, TextInput } from 'react-native';
+import {
+  FlatList,
+  TextInput,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import CheckBox from 'react-native-check-box';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { getAuthToken, setFriendId } from '../../utils/AsyncStorage';
 
+/**
+ * handles user search functionality<br>
+ * includes q, search_in, limit & offset query params
+ */
 class SearchUsers extends React.Component {
   constructor(props) {
     super(props);
@@ -13,6 +24,8 @@ class SearchUsers extends React.Component {
       offset: 0,
       users: [],
       isVisible: false,
+      isChecked: false,
+      search_in: 'all',
     };
   }
 
@@ -21,18 +34,29 @@ class SearchUsers extends React.Component {
   }
 
   // GET/search
+  /**
+   * searches users<br>
+   * incorporates q, search_in, limit & offset queries
+   * @param currentOffsetValue
+   * @returns GET/search API call
+   */
   searchUsers = async (currentOffsetValue) => {
     const token = await getAuthToken();
 
-    // todo search_in still to do
-
-    // resets current offset value, so that 'Search' always returns full search
+    // resets offset value in search string
     if (currentOffsetValue > 0) {
       this.setState({ offset: 0 });
     }
 
+    // changes search_in value in search string, when 'search in friends' checkbox clicked
+    if (this.state.isChecked) {
+      this.setState({
+        search_in: 'friends',
+      });
+    }
+
     return fetch(
-      `http://localhost:3333/api/1.0.0/search?q=${this.state.searchValue}&limit=5&offset=${this.state.offset}`,
+      `http://localhost:3333/api/1.0.0/search?q=${this.state.searchValue}&limit=5&offset=${this.state.offset}&search_in=${this.state.search_in}`,
       {
         headers: {
           'X-Authorization': token,
@@ -56,20 +80,65 @@ class SearchUsers extends React.Component {
   };
 
   render() {
-    const { open, value, items } = this.state;
-
+    if (this.state.isLoading) {
+      return (
+        <View>
+          <Text>Loading...</Text>
+        </View>
+      );
+    }
     return (
       <View>
         <View style={GlobalStyles.headerContainer}>
           <Text style={GlobalStyles.screenTitle}>SEARCH USERS</Text>
         </View>
         <View>
-          <TextInput
-            placeholder="User name: "
-            onChangeText={(value) => this.setState({ searchValue: value })}
-            value={this.state.searchValue}
-            style={GlobalStyles.textInput}
-          />
+          <View style={GlobalStyles.smallButtonContainer}>
+            <TextInput
+              placeholder="User name: "
+              onChangeText={(value) => this.setState({ searchValue: value })}
+              value={this.state.searchValue}
+              style={{
+                fontSize: 21,
+                paddingVertical: 20,
+                outlineStyle: 'none',
+              }}
+            />
+          </View>
+          <View>
+            <CheckBox
+              style={{
+                flex: 1,
+                paddingLeft: 20,
+                alignItems: 'flex-start',
+              }}
+              onClick={() => {
+                this.setState({
+                  isChecked: !this.state.isChecked,
+                  isVisible: true,
+                  search_in: 'all',
+                });
+                this.searchUsers(this.state.offset);
+              }}
+              isChecked={this.state.isChecked}
+              leftText="Search Only Friends"
+              leftTextStyle={{ fontSize: 18, paddingRight: 16 }}
+              checkedImage={
+                <MaterialCommunityIcons
+                  name="checkbox-marked"
+                  color="green"
+                  size={32}
+                />
+              }
+              unCheckedImage={
+                <MaterialCommunityIcons
+                  name="checkbox-blank-outline"
+                  color="red"
+                  size={32}
+                />
+              }
+            />
+          </View>
           <View style={GlobalStyles.smallButtonContainer}>
             <TouchableOpacity
               style={GlobalStyles.searchButtons}
@@ -77,17 +146,17 @@ class SearchUsers extends React.Component {
                 this.searchUsers(this.state.offset);
                 this.setState({
                   isVisible: true,
+                  search_in: 'all',
                 });
               }}
             >
               <Text style={GlobalStyles.buttonText}>SEARCH</Text>
             </TouchableOpacity>
-
-            {this.state.users.length === 5 && (
+            {this.state.users.length === 5 ? (
               <TouchableOpacity
                 style={GlobalStyles.searchButtons}
                 onPress={() => {
-                  this.state.offset += 5; // handle offset increment
+                  this.state.offset += 5;
                   this.searchUsers();
                   console.log(`offset value: ${this.state.offset}`);
                   this.setState({
@@ -97,13 +166,12 @@ class SearchUsers extends React.Component {
               >
                 <Text style={GlobalStyles.buttonText}>NEXT</Text>
               </TouchableOpacity>
-            )}
-
-            {this.state.offset > 0 && (
+            ) : null}
+            {this.state.offset > 0 ? (
               <TouchableOpacity
                 style={GlobalStyles.searchButtons}
                 onPress={() => {
-                  this.state.offset -= 5; // handle offset increment
+                  this.state.offset -= 5;
                   this.searchUsers();
                   console.log(`offset value: ${this.state.offset}`);
                   this.setState({
@@ -113,14 +181,20 @@ class SearchUsers extends React.Component {
               >
                 <Text style={GlobalStyles.buttonText}>BACK</Text>
               </TouchableOpacity>
-            )}
+            ) : null}
           </View>
         </View>
         <FlatList
           data={this.state.users}
           renderItem={({ item }) => (
             <View style={GlobalStyles.searchFriendContainer}>
-              <Text style={GlobalStyles.textInput}>
+              <Text
+                style={GlobalStyles.textInput}
+                onPress={() => {
+                  setFriendId(item.user_id);
+                  this.props.navigation.navigate('FriendProfile');
+                }}
+              >
                 {`${item.user_givenname} ${item.user_familyname}`}
               </Text>
               <TouchableOpacity
