@@ -6,9 +6,10 @@ import MyFriends from '../03_FriendMgmt/MyFriends';
 import FriendProfile from '../03_FriendMgmt/FriendProfile';
 import MyDetails from './MyDetails';
 import UpdatePhoto from './UpdatePhoto';
-
 import MyProfile from './MyProfile';
 import Login from '../01_LoginSignUp/Login';
+import DraftPosts from '../02_PostMgmt/DraftPosts';
+import UpdateDraft from '../02_PostMgmt/UpdateDraft';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,12 +25,12 @@ class ProfileStack extends Component {
         <Stack.Screen name="MyDetails" component={MyDetails} />
         <Stack.Screen name="UpdatePhoto" component={UpdatePhoto} />
         <Stack.Screen name="Login" component={Login} />
-
         <Stack.Screen name="MyFriends" component={MyFriends} />
         <Stack.Screen name="FriendProfile" component={FriendProfile} />
-
         <Stack.Screen name="AddPost" component={AddPost} />
         <Stack.Screen name="MyPost" component={MyPost} />
+        <Stack.Screen name="DraftPosts" component={DraftPosts} />
+        <Stack.Screen name="UpdateDraft" component={UpdateDraft} />
       </Stack.Navigator>
     );
   }
