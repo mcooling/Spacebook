@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import MyProfile from '../components/04_ProfileMgmt/MyProfile';
 import MyFriends from '../components/03_FriendMgmt/MyFriends';
 import { deleteAuthToken, getAuthToken } from '../utils/AsyncStorage';
 import ProfileStack from '../components/04_ProfileMgmt/ProfileStack';
@@ -48,7 +46,6 @@ class BottomTabNavigator extends Component {
         }
       })
       .catch((error) => {
-        // todo may want to display a modal / alert here?
         console.log(`Logout unsuccessful: ${error}`);
       });
   };
@@ -58,10 +55,10 @@ class BottomTabNavigator extends Component {
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
-          tabBarActiveBackgroundColor: '#e0d9e6',
-          tabBarInactiveBackgroundColor: '#9c20c6',
-          tabBarActiveTintColor: '#9c20c6',
-          tabBarInactiveTintColor: '#e0d9e6',
+          tabBarActiveBackgroundColor: '#4453ce',
+          tabBarInactiveBackgroundColor: '#EBEB52FF',
+          tabBarActiveTintColor: '#EBEB52FF',
+          tabBarInactiveTintColor: '#4453ce',
           tabBarStyle: { height: 58 },
           tabBarLabelStyle: {
             fontSize: 11,
@@ -93,6 +90,15 @@ class BottomTabNavigator extends Component {
           }}
         />
         <Tab.Screen
+          name="Search"
+          component={SearchUsers}
+          options={{
+            tabBarIcon: ({ color }) => (
+              <MaterialCommunityIcons name="magnify" color={color} size={32} />
+            ),
+          }}
+        />
+        <Tab.Screen
           name="Logout"
           component={Login}
           options={{
@@ -106,15 +112,6 @@ class BottomTabNavigator extends Component {
               this.logoutUser();
               console.log('Logout tab pressed');
             },
-          }}
-        />
-        <Tab.Screen
-          name="Search"
-          component={SearchUsers}
-          options={{
-            tabBarIcon: ({ color }) => (
-              <MaterialCommunityIcons name="magnify" color={color} size={32} />
-            ),
           }}
         />
       </Tab.Navigator>
