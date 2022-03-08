@@ -1,9 +1,14 @@
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native-web';
-import { FlatList } from 'react-native';
+import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { getUserId, getAuthToken, setFriendId } from '../../utils/AsyncStorage';
+import { getProfilePhoto } from '../../utils/UtilFunctions';
 
+/**
+ * displays list of users friends<br>
+ * displays outstanding friend requests<br>
+ * handles accept / reject friend request
+ */
 class MyFriends extends React.Component {
   constructor(props) {
     super(props);
@@ -12,16 +17,19 @@ class MyFriends extends React.Component {
       friendRequests: [],
       friends: [],
       isLoading: true,
+      photo: null,
     };
   }
 
   componentDidMount() {
     this.getFriends();
     this.getFriendRequests();
-    // todo need to add isLoading - see shopping list
   }
 
-  // GET/user/user_id/friends
+  /**
+   * gets list of user's friends
+   * @returns GET/user/user_id/friends API call
+   */
   getFriends = async () => {
     const token = await getAuthToken();
     const userId = await getUserId();
@@ -37,9 +45,6 @@ class MyFriends extends React.Component {
         } // todo need to add error handling conditions for other response codes
       })
       .then((responseJson) => {
-        // console.log(`My user id: ${userId}`);
-        // console.log('GET/user/user_id/friends response');
-        // console.log(responseJson);
         this.setState({
           isLoading: false,
           friends: responseJson,
@@ -50,7 +55,10 @@ class MyFriends extends React.Component {
       });
   };
 
-  // GET/friendrequests
+  /**
+   * gets list of outstanding friend requests
+   * @returns GET/friendrequests API call
+   */
   getFriendRequests = async () => {
     const token = await getAuthToken();
 
@@ -65,7 +73,6 @@ class MyFriends extends React.Component {
         } // todo need to add error handling conditions for other response codes
       })
       .then((responseJson) => {
-        // console.log(responseJson);
         this.setState({
           isLoading: false,
           friendRequests: responseJson,
@@ -76,7 +83,11 @@ class MyFriends extends React.Component {
       });
   };
 
-  // POST/friendrequests/user_id
+  /**
+   * accepts friend requests
+   * @param id friend id
+   * @returns POST/friendrequests/user_id API call
+   */
   acceptFriendRequest = async (id) => {
     const token = await getAuthToken();
 
@@ -88,7 +99,6 @@ class MyFriends extends React.Component {
     })
       .then((response) => {
         if (response.status === 200) {
-          // console.log('Friend request accepted');
           this.getFriendRequests(); // clears down current list
           this.getFriends(); // update friends list with new friend
         } else {
@@ -101,6 +111,11 @@ class MyFriends extends React.Component {
   };
 
   // DELETE/friendrequests/user_id
+  /**
+   * rejects friend requests
+   * @param id friend id
+   * @returns DELETE/friendrequests/user_id API call
+   */
   rejectFriendRequest = async (id) => {
     const token = await getAuthToken();
 
@@ -112,7 +127,6 @@ class MyFriends extends React.Component {
     })
       .then((response) => {
         if (response.status === 200) {
-          // console.log('Friend request rejected');
           this.getFriendRequests(); // clears down current list
         } else {
           console.log(response.status);
@@ -136,30 +150,39 @@ class MyFriends extends React.Component {
         <View style={GlobalStyles.headerContainer}>
           <Text style={GlobalStyles.screenTitle}>FRIENDS</Text>
         </View>
-
-        <View style={GlobalStyles.container}>
+        <View style={GlobalStyles.friendsContainer}>
           <FlatList
             data={this.state.friends}
             renderItem={({ item }) => (
-              <View>
+              <View style={GlobalStyles.searchFriendContainer}>
                 <Text
                   style={GlobalStyles.textInput}
                   onPress={() => {
                     setFriendId(item.user_id);
-                    // console.log(item);
                     this.props.navigation.navigate('FriendProfile');
                   }}
                 >
                   {`${item.user_givenname} ${item.user_familyname}`}
                 </Text>
+                <TouchableOpacity
+                  style={GlobalStyles.friendButton}
+                  onPress={() => {
+                    setFriendId(item.user_id);
+                    console.log(item);
+                    this.props.navigation.navigate('FriendProfile');
+                  }}
+                >
+                  <Text style={GlobalStyles.buttonText}>View Profile</Text>
+                </TouchableOpacity>
               </View>
             )}
             keyExtractor={(item) => item.user_id.toString()}
           />
         </View>
-
         <View style={GlobalStyles.container}>
-          <Text style={GlobalStyles.screenTitle}>Friend Requests</Text>
+          <Text style={{ fontSize: 20, fontWeight: 'bold', paddingTop: 10 }}>
+            Friend Requests
+          </Text>
           <FlatList
             data={this.state.friendRequests}
             renderItem={({ item }) => (
@@ -167,22 +190,24 @@ class MyFriends extends React.Component {
                 <Text style={GlobalStyles.textInput}>
                   {`${item.first_name} ${item.last_name}`}
                 </Text>
-                <TouchableOpacity
-                  style={GlobalStyles.button}
-                  onPress={() => {
-                    this.acceptFriendRequest(item.user_id);
-                  }}
-                >
-                  <Text style={GlobalStyles.buttonText}>ACCEPT</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={GlobalStyles.button}
-                  onPress={() => {
-                    this.rejectFriendRequest(item.user_id);
-                  }}
-                >
-                  <Text style={GlobalStyles.buttonText}>REJECT</Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', paddingLeft: 20 }}>
+                  <TouchableOpacity
+                    style={GlobalStyles.friendRequestButton}
+                    onPress={() => {
+                      this.acceptFriendRequest(item.user_id);
+                    }}
+                  >
+                    <Text style={GlobalStyles.buttonText}>ACCEPT</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={GlobalStyles.friendRequestButton}
+                    onPress={() => {
+                      this.rejectFriendRequest(item.user_id);
+                    }}
+                  >
+                    <Text style={GlobalStyles.buttonText}>REJECT</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
             keyExtractor={(item) => item.user_id.toString()}

@@ -1,9 +1,19 @@
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native-web';
-import { StyleSheet, TextInput } from 'react-native';
+import {
+  StyleSheet,
+  TextInput,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import GlobalStyles from '../../utils/GlobalStyles';
-import { getAuthToken, getUserId, getPostId } from '../../utils/AsyncStorage';
+import { getAuthToken } from '../../utils/AsyncStorage';
+import { errorCodes } from '../../utils/ErrorCodes';
 
+/**
+ * displays details of a single post<br>
+ * used for updating posts from profile page
+ */
 class MyPost extends React.Component {
   constructor(props) {
     super(props);
@@ -21,9 +31,10 @@ class MyPost extends React.Component {
     this.viewPost();
   }
 
-  // todo i think view and edit are now just about working! check with ash...
-
-  // GET/user/{user_id}/post/{post_id}
+  /**
+   * fetches details of post selected
+   * @returns GET/user/user_id/post/post_id API call
+   */
   viewPost = async () => {
     const token = await getAuthToken();
 
@@ -49,7 +60,7 @@ class MyPost extends React.Component {
       .then((response) => {
         if (response.status === 200) {
           return response.json();
-        } // todo need to add error handling conditions for other response codes
+        }
       })
       .then((responseJson) => {
         this.setState({ post: responseJson });
@@ -67,12 +78,12 @@ class MyPost extends React.Component {
       });
   };
 
-  // PATCH/user/{user_id}/post/{post_id}
+  /**
+   * posts updates to post content
+   * @returns PATCH/user/user_id/post/post_id API call
+   */
   updatePost = async () => {
     const token = await getAuthToken();
-    const id = await getUserId();
-    const postId = await getPostId();
-
     const updatedText = {};
 
     if (this.state.textValue !== this.state.o_textValue) {
@@ -93,6 +104,7 @@ class MyPost extends React.Component {
       .then(() => {
         console.log('Update successful');
         console.log(updatedText);
+        this.props.navigation.navigate('MyProfile');
       })
       .catch((error) => {
         console.log(error);
@@ -105,7 +117,6 @@ class MyPost extends React.Component {
         <View style={GlobalStyles.headerContainer}>
           <Text style={GlobalStyles.screenTitle}>MY POST</Text>
         </View>
-
         <View style={styles.textInputContainer}>
           <TextInput
             style={styles.textInput}
@@ -123,7 +134,7 @@ class MyPost extends React.Component {
             style={GlobalStyles.smallButton}
             onPress={() => {
               this.updatePost();
-              this.props.navigation.navigate('MyProfile');
+              // this.props.navigation.navigate('MyProfile');
             }}
           >
             <Text style={GlobalStyles.buttonText}>SUBMIT</Text>

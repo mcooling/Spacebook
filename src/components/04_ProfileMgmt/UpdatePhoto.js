@@ -3,6 +3,10 @@ import { Camera } from 'expo-camera';
 import { Component } from 'react';
 import { getAuthToken, getUserId } from '../../utils/AsyncStorage';
 
+/**
+ * lets user update profile picture<br>
+ * accesses device camera
+ */
 class UpdatePhoto extends Component {
   constructor(props) {
     super(props);
@@ -16,11 +20,13 @@ class UpdatePhoto extends Component {
   async componentDidMount() {
     const { status } = await Camera.requestCameraPermissionsAsync();
     this.setState({ hasPermission: status === 'granted' });
-    // console.log(this.state.hasPermission);
   }
 
-  // takes picture, creates raw image file (base64)
-  // passes to server for conversion
+  /**
+   * takes picture, using device camera<br>
+   * creates raw image file (base64) <br>
+   * passes raw file to server for conversion to blob
+   */
   takePicture = async () => {
     if (this.camera) {
       const options = {
@@ -33,7 +39,11 @@ class UpdatePhoto extends Component {
     }
   };
 
-  // takes raw base64 image file, converts to blob
+  /**
+   * takes raw base64 image file, converts to blob<br>
+   * @param data takes raw base64 image file
+   * @returns POST/user/user_id/photo API call
+   */
   sendPhotoToServer = async (data) => {
     const id = await getUserId();
     const token = await getAuthToken();
@@ -76,6 +86,14 @@ class UpdatePhoto extends Component {
               >
                 <Text style={styles.text}>Take Picture</Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => {
+                  this.props.navigation.navigate('MyProfile');
+                }}
+              >
+                <Text style={styles.text}>Cancel</Text>
+              </TouchableOpacity>
             </View>
           </Camera>
         </View>
@@ -88,8 +106,6 @@ class UpdatePhoto extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // justifyContent: 'center',
-    // alignItems: 'center',
   },
   camera: {
     flex: 1,
@@ -104,6 +120,7 @@ const styles = StyleSheet.create({
     flex: 0.1,
     alignSelf: 'flex-end',
     alignItems: 'center',
+    paddingRight: 140,
   },
   text: {
     fontSize: 18,

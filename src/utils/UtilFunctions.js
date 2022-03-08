@@ -13,7 +13,7 @@ export const getUserData = async () => {
 
 export const getFriendData = async () => {
   const token = await getAuthToken(); // get auth token
-  const id = await getFriendId(); // get user id
+  const id = await getFriendId(); // get friend user id
   return fetch(`http://localhost:3333/api/1.0.0/user/${id}`, {
     headers: {
       'X-Authorization': token,

@@ -1,6 +1,5 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-
 import Login from '../components/01_LoginSignUp/Login';
 import SignUp from '../components/01_LoginSignUp/SignUp';
 import MyFriends from '../components/03_FriendMgmt/MyFriends';

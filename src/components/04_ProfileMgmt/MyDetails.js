@@ -1,10 +1,14 @@
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native-web';
-import { TextInput } from 'react-native';
+import { TextInput, Text, TouchableOpacity, View } from 'react-native';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { getAuthToken, getUserId } from '../../utils/AsyncStorage';
 import { getUserData } from '../../utils/UtilFunctions';
 
+/**
+ * handles profile updates<br>
+ * creates a copy of name and email address values in state<br>
+ * checks for any changes between each set
+ */
 class MyDetails extends React.Component {
   constructor(props) {
     super(props);
@@ -37,7 +41,10 @@ class MyDetails extends React.Component {
       });
   }
 
-  // PATCH/user{user_id}
+  /**
+   * makes updates to username and email address
+   * @returns PATCH/user{user_id} APi call
+   */
   updateUserDetails = async () => {
     const token = await getAuthToken();
     const id = await getUserId();
@@ -45,7 +52,7 @@ class MyDetails extends React.Component {
     // stores updated items, to pass in patch request body
     const patchRequestBody = {};
 
-    // checks state for any update values
+    // checks state for any updated values
     if (this.state.firstName !== this.state.o_firstName) {
       patchRequestBody.first_name = this.state.firstName;
     }
@@ -82,7 +89,6 @@ class MyDetails extends React.Component {
         <View style={GlobalStyles.headerContainer}>
           <Text style={GlobalStyles.screenTitle}>MY DETAILS</Text>
         </View>
-
         <TextInput
           value={this.state.firstName}
           onChangeText={(firstName) => this.setState({ firstName })}
@@ -98,7 +104,6 @@ class MyDetails extends React.Component {
           onChangeText={(value) => this.setState({ emailAddress: value })}
           style={GlobalStyles.textInput}
         />
-
         <TouchableOpacity
           style={GlobalStyles.button}
           onPress={() => {

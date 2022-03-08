@@ -1,6 +1,13 @@
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native-web';
-import { FlatList, StyleSheet, ScrollView } from 'react-native';
+import {
+  FlatList,
+  StyleSheet,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+  ScrollView,
+} from 'react-native';
 import GlobalStyles from '../../utils/GlobalStyles';
 import {
   getFriendData,
@@ -9,6 +16,12 @@ import {
 import { getAuthToken, getFriendId, getUserId } from '../../utils/AsyncStorage';
 import PostManager from '../02_PostMgmt/PostManager';
 
+/**
+ * displays user profile page<br>
+ * checks if user is a friend or not<br>
+ * shows posts and add post button is user is a friend<br>
+ * shows add friend button is user isn't a friend
+ */
 class FriendProfile extends React.Component {
   constructor(props) {
     super(props);
@@ -66,13 +79,18 @@ class FriendProfile extends React.Component {
     this.unsubscribe();
   }
 
-  // function to check if user is a friend
+  /**
+   * checks if user is a friend<br>
+   * loops through friend list<br>
+   * checks for a match against profile user_id<br>
+   * sets boolean, used for conditional rendering
+   * @returns GET/user/user_id/friends API call
+   */
   friendMatch = async () => {
     const token = await getAuthToken();
     const myId = await getUserId();
     const profileId = await getFriendId();
 
-    // get list of friends
     return fetch(`http://localhost:3333/api/1.0.0/user/${myId}/friends`, {
       headers: {
         'X-Authorization': token,
@@ -98,7 +116,6 @@ class FriendProfile extends React.Component {
 
         console.log(checkFriend);
 
-        // const checkFriend = this.state.friendList.includes(profileId);
         console.log(`checkFriend function response: ${checkFriend}`);
 
         if (checkFriend) {
@@ -119,12 +136,13 @@ class FriendProfile extends React.Component {
       });
   };
 
-  // GET/user/{user_id}/post
-  // todo not displaying posts...think it's linked to conditional rendering
+  /**
+   * gets user posts
+   * @returns GET/user/{user_id}/post API call
+   */
   getPosts = async () => {
     const token = await getAuthToken();
     const friendId = await getFriendId();
-    // const { friendId } = this.state;
 
     return fetch(`http://localhost:3333/api/1.0.0/user/${friendId}/post`, {
       headers: {
@@ -142,116 +160,120 @@ class FriendProfile extends React.Component {
           postList: responseJson,
         });
         console.log(`friend post objects: ${JSON.stringify(responseJson)}`);
-        // console.log(`Friend post text: ${responseJson.text}`);
       })
       .catch((error) => {
         console.log(error);
       });
   };
 
-  // POST/user/{user_id}/friends
-  // id is their id, not yours
+  /**
+   * sends friend request<br>
+   * only called if user is a friend<br>
+   * passes user profile id
+   * @returns POST/user/{user_id}/friends API call
+   */
   sendFriendRequest = async () => {
     const token = await getAuthToken();
     const friendId = await getFriendId();
     // const friendId = this.props.route.params.profileId;
     console.log(`Friend id ${friendId}`);
 
-    return (
-      fetch(`http://localhost:3333/api/1.0.0/user/${friendId}/friends`, {
-        method: 'POST',
-        headers: {
-          'X-Authorization': token,
-        },
+    return fetch(`http://localhost:3333/api/1.0.0/user/${friendId}/friends`, {
+      method: 'POST',
+      headers: {
+        'X-Authorization': token,
+      },
+    })
+      .then((response) => {
+        // console.log(response.status);
+        if (response.status === 201) {
+          console.log('Your friend request has been sent');
+        } // todo need to add error handling conditions for other response codes
+        if (response.status === 403) {
+          console.log('User is already added by a friend');
+        }
       })
-        // .then((response) => response.json())
-        // .then((responseJson) => {
-        //   console.log(responseJson);
-        //   console.log(
-        //     `Friend request sent to ${responseJson.first_name} ${responseJson.lastName} ID: ${responseJson.user_id}`
-        //   );
-        // })
-        .then((response) => {
-          // console.log(response.status);
-          if (response.status === 201) {
-            console.log('Your friend request has been sent');
-          } // todo need to add error handling conditions for other response codes
-          if (response.status === 403) {
-            console.log('User is already added by a friend');
-          }
-        })
-        .catch((error) => {
-          console.log(`Post unsuccessful: ${error}`);
-        })
-    );
+      .catch((error) => {
+        console.log(`Post unsuccessful: ${error}`);
+      });
   };
 
   render() {
     if (!this.state.isLoading) {
       return (
-        <View>
-          <View style={GlobalStyles.headerContainer}>
-            <Text style={GlobalStyles.screenTitle}>FRIEND PROFILE</Text>
+        <View style={styles.parentContainer}>
+          <View style={styles.headerContainer}>
+            <Text style={styles.screenTitle}>PROFILE PAGE</Text>
           </View>
-          <View style={GlobalStyles.container}>
+          <View style={{ alignItems: 'center', paddingTop: 20 }}>
             <Image
-              source={{
-                uri: this.state.photo,
-              }}
-              style={{
-                width: 350,
-                height: 300,
-                borderWidth: 5,
-              }}
+              source={{ uri: this.state.photo }}
+              style={{ width: 350, height: 250 }}
             />
           </View>
-          <Text
-            style={GlobalStyles.profileTextBold}
-          >{`${this.state.firstName.toUpperCase()} ${this.state.lastName.toUpperCase()}`}</Text>
-
-          <View style={GlobalStyles.smallButtonContainer}>
-            {this.state.alreadyFriend == true ? (
-              <TouchableOpacity
-                style={GlobalStyles.smallButton}
-                onPress={async () => {
-                  const profileId = await getFriendId();
-                  console.log(`profile id${profileId}`);
-                  this.props.navigation.navigate('AddPost', {
-                    profileId,
-                  });
-                }}
-              >
-                <Text style={GlobalStyles.buttonText}>ADD POST</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={GlobalStyles.smallButton}
-                onPress={() => {
-                  this.sendFriendRequest();
-                }}
-              >
-                <Text style={GlobalStyles.buttonText}>ADD FRIEND</Text>
-              </TouchableOpacity>
-            )}
+          <View
+            style={{
+              padding: 20,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Text
+              style={{
+                paddingBottom: 8,
+                fontSize: 18,
+                fontWeight: 'bold',
+                // justifyContent: 'center',
+              }}
+            >
+              {`${this.state.firstName.toUpperCase()} ${this.state.lastName.toUpperCase()}`}
+            </Text>
+            <View style={styles.friendButtonContainer}>
+              {this.state.alreadyFriend == true ? (
+                <TouchableOpacity
+                  style={styles.friendButton}
+                  onPress={async () => {
+                    const profileId = await getFriendId();
+                    console.log(`profile id${profileId}`);
+                    this.props.navigation.navigate('AddPost', {
+                      profileId,
+                    });
+                  }}
+                >
+                  <Text style={styles.mediumButtonText}>ADD POST</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={styles.friendButton}
+                  onPress={() => {
+                    this.sendFriendRequest();
+                  }}
+                >
+                  <Text style={styles.mediumButtonText}>ADD FRIEND</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
 
           {this.state.alreadyFriend == true ? (
-            <View style={GlobalStyles.container}>
-              <Text style={GlobalStyles.sectionHeader}>My Posts</Text>
-              <View>
-                <FlatList
-                  data={this.state.postList}
-                  renderItem={({ item }) => (
-                    <View style={styles.container}>
-                      <PostManager
-                        friendPost={item}
-                        navigation={this.props.navigation}
-                      />
-                    </View>
-                  )}
-                  keyExtractor={(item) => item.post_id.toString()}
-                />
+            <View style={{ flex: 1 }}>
+              <View style={{ paddingHorizontal: 20, paddingVertical: 10 }}>
+                <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
+                  My Posts
+                </Text>
               </View>
+              <FlatList
+                data={this.state.postList}
+                renderItem={({ item }) => (
+                  <View style={styles.postContainer}>
+                    <PostManager
+                      friendPost={item}
+                      navigation={this.props.navigation}
+                    />
+                  </View>
+                )}
+                keyExtractor={(item) => item.post_id.toString()}
+              />
             </View>
           ) : null}
         </View>
@@ -266,11 +288,96 @@ class FriendProfile extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  postText: {
-    fontSize: 15,
-    paddingTop: 10,
+  parentContainer: {
+    flex: 1,
+    justifyContent: 'flex-start',
+  },
+  headerContainer: {
+    width: '100vw',
+    backgroundColor: '#4453ce',
+    padding: 20,
+  },
+  screenTitle: {
+    fontSize: 20,
+    color: '#EBEB52FF',
+    fontWeight: 'bold',
+  },
+  textInput: {
+    fontSize: 20,
+    paddingTop: 25,
+    paddingLeft: 20,
     alignItems: 'center',
   },
+  mediumButton: {
+    backgroundColor: '#4453ce',
+    width: 170,
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  friendButton: {
+    backgroundColor: '#4453ce',
+    width: 140,
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  mediumButtonText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: 'white',
+    paddingVertical: 10,
+  },
+  mediumButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+  },
+  friendButtonContainer: {
+    flexDirection: 'row',
+    // justifyContent: 'flex-end',
+    paddingLeft: 20,
+  },
+  postContainer: {
+    paddingLeft: 20,
+  },
+  postText: {
+    fontSize: 16,
+    alignItems: 'center',
+  },
+  smallButtonContainer: {
+    flexDirection: 'row',
+  },
+  editPostButton: {
+    marginRight: 10,
+    width: 70,
+    backgroundColor: '#f59f0f',
+    marginVertical: 10,
+    borderRadius: 5,
+  },
+  deletePostButton: {
+    marginRight: 10,
+    width: 70,
+    backgroundColor: '#eb083a',
+    marginVertical: 10,
+    borderRadius: 5,
+  },
+  editButtonText: {
+    fontSize: 12,
+    color: 'black',
+    paddingVertical: 8,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  deleteButtonText: {
+    fontSize: 12,
+    color: 'white',
+    paddingVertical: 8,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  // postText: {
+  //   fontSize: 15,
+  //   paddingTop: 10,
+  //   alignItems: 'center',
+  // },
   profileText: {
     fontSize: 18,
     paddingTop: 10,
@@ -288,35 +395,60 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
   },
-  editPostButton: {
-    marginRight: 10,
-    width: 70,
-    backgroundColor: '#f59f0f',
-    // paddingTop: 10,
-    marginTop: 10,
-    borderRadius: 5,
+  // editPostButton: {
+  //   marginRight: 10,
+  //   width: 70,
+  //   backgroundColor: '#f59f0f',
+  //   // paddingTop: 10,
+  //   marginTop: 10,
+  //   borderRadius: 5,
+  // },
+  // deletePostButton: {
+  //   marginRight: 10,
+  //   width: 70,
+  //   backgroundColor: '#eb083a',
+  //   // paddingTop: 10,
+  //   marginTop: 10,
+  //   borderRadius: 5,
+  // },
+  // editButtonText: {
+  //   fontSize: 12,
+  //   color: 'black',
+  //   paddingVertical: 8,
+  //   fontWeight: 'bold',
+  //   textAlign: 'center',
+  // },
+  // deleteButtonText: {
+  //   fontSize: 12,
+  //   color: 'white',
+  //   paddingVertical: 8,
+  //   fontWeight: 'bold',
+  //   textAlign: 'center',
+  // },
+  alertContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  deletePostButton: {
-    marginRight: 10,
-    width: 70,
-    backgroundColor: '#eb083a',
-    // paddingTop: 10,
-    marginTop: 10,
-    borderRadius: 5,
-  },
-  editButtonText: {
-    fontSize: 12,
-    color: 'black',
-    paddingVertical: 8,
-    fontWeight: 'bold',
+  messageText: {
+    color: '#23341c',
+    fontSize: 18,
     textAlign: 'center',
   },
-  deleteButtonText: {
-    fontSize: 12,
-    color: 'white',
-    paddingVertical: 8,
-    fontWeight: 'bold',
+  titleText: {
+    color: '#23341c',
+    fontSize: 20,
     textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  confirmButton: {
+    width: 100,
+    textAlign: 'center',
+    backgroundColor: '#45732b',
+  },
+  confirmButtonText: {
+    fontWeight: 'bold',
+    fontSize: 17,
   },
 });
 
