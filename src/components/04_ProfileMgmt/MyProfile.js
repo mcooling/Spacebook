@@ -1,18 +1,23 @@
 import React from 'react';
 import {
   FlatList,
+  Image,
   ScrollView,
   StyleSheet,
-  Image,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import GlobalStyles from '../../utils/GlobalStyles';
-import { getUserData, getProfilePhoto } from '../../utils/UtilFunctions';
-import { getAuthToken, getUserId, getPostId } from '../../utils/AsyncStorage';
+import { getProfilePhoto, getUserData } from '../../utils/UtilFunctions';
+import { getAuthToken, getPostId, getUserId } from '../../utils/AsyncStorage';
 
+/**
+ * Main user profile page<br>
+ * displays profile photo and list of posts
+ * allows user to update and delete posts
+ */
 class MyProfile extends React.Component {
   constructor(props) {
     super(props);
@@ -25,6 +30,7 @@ class MyProfile extends React.Component {
       isLoading: true,
       postList: [],
       showAlert: false,
+      postId: 0,
     };
   }
 
@@ -67,6 +73,7 @@ class MyProfile extends React.Component {
     this.unsubscribe();
   }
 
+  // handles alert for delete post
   showAlert = () => {
     this.setState({
       showAlert: true,
@@ -79,7 +86,10 @@ class MyProfile extends React.Component {
     });
   };
 
-  // GET/user/{user_id}/post
+  /**
+   * gets list of user posts
+   * @returns GET/user/{user_id}/post API call
+   */
   getPosts = async () => {
     const token = await getAuthToken();
     const id = await getUserId();
@@ -107,9 +117,11 @@ class MyProfile extends React.Component {
       });
   };
 
-  // todo have another look at this. not sure why there's two vars for post id
-  // todo still not refreshing consistently, real time
-  // DELETE/user/{user_id}/post/{post_id}
+  /**
+   * handles delete post
+   * @param post_id
+   * @returns DELETE/user/{user_id}/post/{post_id} API call
+   */
   deletePost = async (post_id) => {
     const token = await getAuthToken();
     const id = await getUserId();
@@ -126,7 +138,7 @@ class MyProfile extends React.Component {
       .then((response) => {
         if (response.status === 200) {
           console.log(`Post ${postId} deleted`);
-          this.getPosts(); // refreshes posts
+          this.getPosts();
         } else {
           console.log(response.status);
           console.log(`User Id: ${this.id}`);
@@ -140,173 +152,178 @@ class MyProfile extends React.Component {
   render() {
     const { showAlert } = this.state;
 
-    if (!this.state.isLoading) {
+    if (this.state.isLoading) {
       return (
-        <ScrollView>
-          <View style={GlobalStyles.headerContainer}>
-            <Text style={GlobalStyles.screenTitle}>HOME</Text>
+        <View>
+          <Text>Loading...</Text>
+        </View>
+      );
+    }
+    return (
+      <View style={styles.parentContainer}>
+        <View style={styles.headerContainer}>
+          <Text style={styles.screenTitle}>HOME</Text>
+        </View>
+        <Text
+          style={{ padding: 20, fontSize: 18 }}
+          onPress={async () => {
+            const profileId = await getUserId();
+            console.log(`profile id${profileId}`);
+            this.props.navigation.navigate('AddPost', {
+              profileId,
+            });
+          }}
+        >
+          What's on your mind?
+        </Text>
+        <View style={{ alignItems: 'center' }}>
+          <Image
+            source={{ uri: this.state.photo }}
+            style={{ width: 350, height: 250 }}
+          />
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            padding: 20,
+          }}
+        >
+          <View>
+            <Text
+              style={{ paddingBottom: 8, fontSize: 18, fontWeight: 'bold' }}
+            >{`${this.state.firstName.toUpperCase()} ${this.state.lastName.toUpperCase()}`}</Text>
+            <Text
+              style={{ paddingBottom: 8, fontSize: 18 }}
+            >{`${this.state.emailAddress}`}</Text>
           </View>
-          <Text
-            style={GlobalStyles.textInput}
-            onPress={async () => {
-              const profileId = await getUserId();
-              console.log(`profile id${profileId}`);
-              this.props.navigation.navigate('AddPost', {
-                profileId,
-              });
-            }}
-          >
-            What's on your mind?
-          </Text>
-          <View style={GlobalStyles.container}>
-            <Image
-              source={{
-                uri: this.state.photo,
-              }}
-              style={{
-                width: 350,
-                height: 300,
-                borderWidth: 5,
-              }}
-            />
-          </View>
-          <Text
-            style={styles.profileTextBold}
-          >{`${this.state.firstName.toUpperCase()} ${this.state.lastName.toUpperCase()}`}</Text>
-          <Text style={styles.profileText}>{`${this.state.emailAddress}`}</Text>
-          <View style={GlobalStyles.smallButtonContainer}>
+          <View style={styles.mediumButtonContainer2}>
             <TouchableOpacity
-              style={GlobalStyles.smallButton}
+              style={styles.mediumButton}
               onPress={() => {
                 this.props.navigation.navigate('MyDetails');
               }}
             >
-              <Text style={GlobalStyles.buttonText}>EDIT DETAILS</Text>
+              <Text style={styles.mediumButtonText}>EDIT DETAILS</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={GlobalStyles.smallButton}
+              style={styles.mediumButton}
               onPress={() => {
                 this.props.navigation.navigate('UpdatePhoto');
               }}
             >
-              <Text style={GlobalStyles.buttonText}>UPDATE PHOTO</Text>
+              <Text style={styles.mediumButtonText}>UPDATE PHOTO</Text>
             </TouchableOpacity>
           </View>
-          <View style={GlobalStyles.container}>
-            <Text style={GlobalStyles.sectionHeader}>My Posts</Text>
-            <View>
-              <FlatList
-                data={this.state.postList}
-                renderItem={({ item }) => (
-                  <View style={styles.container}>
-                    <Text style={styles.postText}>{item.text}</Text>
-                    <View style={styles.buttonContainer}>
-                      <TouchableOpacity
-                        style={styles.editPostButton}
-                        onPress={async () => {
-                          const p_userId = await getUserId();
-                          const p_userPostId = item.post_id;
-                          console.log(
-                            `user id ${p_userId} post id ${p_userPostId}`
-                          );
-                          this.props.navigation.navigate('MyPost', {
-                            p_userId,
-                            p_userPostId,
-                          });
-                        }}
-                      >
-                        <Text style={styles.editButtonText}>EDIT</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.deletePostButton}
-                        onPress={() => {
-                          this.showAlert();
-                          // this.deletePost(item.post_id).then(() => {});
-                        }}
-                      >
-                        <Text style={styles.deleteButtonText}>DELETE</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                )}
-                keyExtractor={(item) => item.post_id.toString()}
-              />
-            </View>
-          </View>
+        </View>
 
-          <AwesomeAlert
-            show={showAlert}
-            showProgress={false}
-            title="Delete Warning!"
-            titleStyle={styles.titleText}
-            message="Are you sure you want to delete this post? Once deleted, it cannot be recovered."
-            messageStyle={styles.messageText}
-            closeOnTouchOutside
-            closeOnHardwareBackPress={false}
-            showConfirmButton
-            confirmText="OK"
-            confirmButtonStyle={styles.confirmButton}
-            confirmButtonTextStyle={styles.confirmButtonText}
-            showCancelButton
-            cancelText="Cancel"
-            cancelButtonStyle={styles.confirmButton}
-            cancelButtonTextStyle={styles.confirmButtonText}
-            onConfirmPressed={() => {
-              this.deletePost(item.post_id).then(() => {});
-              this.hideAlert();
-            }}
-            onCancelPressed={() => {
-              this.hideAlert();
-            }}
-          />
-        </ScrollView>
-      );
-    }
-    return (
-      <View>
-        <Text>Loading...</Text>
+        <View style={{ paddingLeft: 20, paddingBottom: 10 }}>
+          <Text style={{ fontSize: 20, fontWeight: 'bold' }}>My Posts</Text>
+        </View>
+        <FlatList
+          data={this.state.postList}
+          renderItem={({ item }) => (
+            <View style={styles.postContainer}>
+              <Text style={styles.postText}>{item.text}</Text>
+              <View style={styles.smallButtonContainer}>
+                <TouchableOpacity
+                  style={styles.editPostButton}
+                  onPress={async () => {
+                    const p_userId = await getUserId();
+                    const p_userPostId = item.post_id;
+                    console.log(`user id ${p_userId} post id ${p_userPostId}`);
+                    this.props.navigation.navigate('MyPost', {
+                      p_userId,
+                      p_userPostId,
+                    });
+                  }}
+                >
+                  <Text style={styles.editButtonText}>EDIT</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.deletePostButton}
+                  onPress={() => {
+                    // this.showAlert(); // todo not working. not sure how to pass item
+                    this.deletePost(item.post_id).then(() => {});
+                  }}
+                >
+                  <Text style={styles.deleteButtonText}>DELETE</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+          keyExtractor={(item) => item.post_id.toString()}
+        />
       </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
+  parentContainer: {
+    flex: 1,
+    justifyContent: 'flex-start',
+  },
+  headerContainer: {
+    width: '100vw',
+    backgroundColor: '#4453ce',
+    padding: 20,
+  },
+  screenTitle: {
+    fontSize: 20,
+    color: '#EBEB52FF',
+    fontWeight: 'bold',
+  },
+  textInput: {
+    fontSize: 20,
+    paddingTop: 25,
+    paddingLeft: 20,
+    alignItems: 'center',
+  },
+  mediumButton: {
+    backgroundColor: '#4453ce',
+    width: 130,
+    alignItems: 'center',
+    borderRadius: 5,
+    marginBottom: 5,
+  },
+  mediumButtonText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: 'white',
+    paddingVertical: 10,
+  },
+  mediumButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+  },
+  mediumButtonContainer2: {
+    flexDirection: 'column',
+    justifyContent: 'space-evenly',
+  },
+  postContainer: {
+    paddingLeft: 20,
+  },
   postText: {
     fontSize: 15,
     paddingTop: 10,
     alignItems: 'center',
   },
-  profileText: {
-    fontSize: 18,
-    paddingTop: 10,
-    paddingLeft: 20,
-  },
-  profileTextBold: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    paddingTop: 16,
-    paddingLeft: 20,
-  },
-  container: {
-    marginBottom: 15,
-  },
-  buttonContainer: {
+  smallButtonContainer: {
     flexDirection: 'row',
   },
   editPostButton: {
     marginRight: 10,
     width: 70,
     backgroundColor: '#f59f0f',
-    // paddingTop: 10,
-    marginTop: 10,
+    marginVertical: 10,
     borderRadius: 5,
   },
   deletePostButton: {
     marginRight: 10,
     width: 70,
     backgroundColor: '#eb083a',
-    // paddingTop: 10,
-    marginTop: 10,
+    marginVertical: 10,
     borderRadius: 5,
   },
   editButtonText: {
@@ -322,6 +339,37 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  profileText: {
+    fontSize: 18,
+    paddingTop: 10,
+    paddingLeft: 20,
+  },
+  profileTextBold: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    paddingTop: 16,
+    paddingLeft: 20,
+  },
+  confirmButton: {
+    width: 100,
+    textAlign: 'center',
+    backgroundColor: '#45732b',
+  },
+  confirmButtonText: {
+    fontWeight: 'bold',
+    fontSize: 17,
+    color: 'white',
+  },
+  cancelButton: {
+    width: 100,
+    textAlign: 'center',
+    backgroundColor: '#f10933',
+  },
+  cancelButtonText: {
+    fontWeight: 'bold',
+    fontSize: 17,
+    color: 'white',
   },
 });
 
