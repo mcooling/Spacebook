@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 import GlobalStyles from '../../utils/GlobalStyles';
-import { getAuthToken } from '../../utils/AsyncStorage';
+import { getAuthToken, getUserId } from '../../utils/AsyncStorage';
 import { errorCodes } from '../../utils/ErrorCodes';
 
 /**
@@ -37,12 +37,10 @@ class MyPost extends React.Component {
    */
   viewPost = async () => {
     const token = await getAuthToken();
-
-    console.log('I am here');
-
+    // console.log('I am here');
     const user_id = this.props.route.params.p_userId;
     const user_postId = this.props.route.params.p_userPostId;
-    console.log(`user details: userid ${user_id} postid ${user_postId}`);
+    // console.log(`user details: userid ${user_id} postid ${user_postId}`);
 
     this.setState({
       userId: user_id,
@@ -56,11 +54,17 @@ class MyPost extends React.Component {
           'X-Authorization': token,
         },
       }
-    )
+    ) // todo need to add error handling conditions for other response codes
       .then((response) => {
         if (response.status === 200) {
           return response.json();
         }
+        if (response.status === 403) {
+          console.log(
+            'Error code 403: You can only view the posts of yourself or your friends'
+          );
+        }
+        errorCodes(response); // todo not working as expected
       })
       .then((responseJson) => {
         this.setState({ post: responseJson });
@@ -68,9 +72,9 @@ class MyPost extends React.Component {
           textValue: responseJson.text,
           o_textValue: responseJson.text,
         });
-        console.log(`Post ID: ${responseJson.post_id}`);
-        console.log(`Post Text: ${responseJson.text}`);
-        console.log('Full GET response');
+        // console.log(`Post ID: ${responseJson.post_id}`);
+        // console.log(`Post Text: ${responseJson.text}`);
+        // console.log('Full GET response');
         console.log(responseJson);
       })
       .catch((error) => {
@@ -100,7 +104,7 @@ class MyPost extends React.Component {
         },
         body: JSON.stringify(updatedText),
       }
-    )
+    ) // todo add error handling - speak to nath
       .then(() => {
         console.log('Update successful');
         console.log(updatedText);
@@ -133,8 +137,13 @@ class MyPost extends React.Component {
           <TouchableOpacity
             style={GlobalStyles.smallButton}
             onPress={() => {
-              this.updatePost();
-              // this.props.navigation.navigate('MyProfile');
+              this.updatePost().then(() => {
+                if (this.state.userId == getUserId()) {
+                  this.props.navigation.navigate('MyProfile');
+                } else {
+                  this.props.navigation.navigate('FriendProfile');
+                }
+              });
             }}
           >
             <Text style={GlobalStyles.buttonText}>SUBMIT</Text>
@@ -142,7 +151,11 @@ class MyPost extends React.Component {
           <TouchableOpacity
             style={GlobalStyles.smallButton}
             onPress={() => {
-              this.props.navigation.navigate('MyProfile');
+              if (this.state.userId == getUserId()) {
+                this.props.navigation.navigate('MyProfile');
+              } else {
+                this.props.navigation.navigate('FriendProfile');
+              }
             }}
           >
             <Text style={GlobalStyles.buttonText}>CANCEL</Text>
