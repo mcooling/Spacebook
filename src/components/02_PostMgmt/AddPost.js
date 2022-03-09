@@ -11,7 +11,7 @@ import {
   getAuthToken,
   setPostId,
   addDraftPost,
-  getDraftPost,
+  getUserId,
 } from '../../utils/AsyncStorage';
 
 /**
@@ -23,6 +23,7 @@ class AddPost extends React.Component {
 
     this.state = {
       postText: '',
+      user_id: 0,
     };
   }
 
@@ -32,7 +33,10 @@ class AddPost extends React.Component {
   addPost = async () => {
     const token = await getAuthToken();
     const userId = this.props.route.params.profileId;
-    console.log(`UserId HERE ${userId}`);
+    this.setState({
+      user_id: userId,
+    });
+    // console.log(`UserId HERE ${userId}`);
 
     return fetch(`http://localhost:3333/api/1.0.0/user/${userId}/post`, {
       method: 'POST',
@@ -43,14 +47,18 @@ class AddPost extends React.Component {
       body: JSON.stringify({
         text: this.state.postText,
       }),
-    })
+    }) // todo add error handling - speak to nath
       .then((response) => response.json())
       .then((json) => {
         console.log(`Post successful. Post ID: ${json.id}`);
-        console.log(json);
+        // console.log(json);
         setPostId(json.id)
           .then(() => {
-            this.props.navigation.navigate('MyProfile');
+            if (this.state.user_id == getUserId()) {
+              this.props.navigation.navigate('MyProfile');
+            } else {
+              this.props.navigation.navigate('FriendProfile');
+            }
           })
           .catch((error) => {
             console.log(`Post unsuccessful: ${error}`);
@@ -95,7 +103,6 @@ class AddPost extends React.Component {
           </TouchableOpacity>
         </View>
         <View style={styles.smallButtonContainer}>
-          {/* todo handles draft post function - extension task */}
           <TouchableOpacity
             style={styles.draftPostButton}
             onPress={() => {
