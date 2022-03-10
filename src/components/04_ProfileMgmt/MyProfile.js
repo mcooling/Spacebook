@@ -2,16 +2,14 @@ import React from 'react';
 import {
   FlatList,
   Image,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import AwesomeAlert from 'react-native-awesome-alerts';
-import GlobalStyles from '../../utils/GlobalStyles';
 import { getProfilePhoto, getUserData } from '../../utils/UtilFunctions';
 import { getAuthToken, getPostId, getUserId } from '../../utils/AsyncStorage';
+import GlobalStyles from '../../utils/GlobalStyles';
 
 /**
  * Main user profile page<br>
@@ -36,7 +34,6 @@ class MyProfile extends React.Component {
 
   componentDidMount() {
     this.unsubscribe = this.props.navigation.addListener('focus', () => {
-      // console.log("I'm HERE!!!", this.route);
       getProfilePhoto()
         .then((response) => {
           return response.blob();
@@ -73,19 +70,6 @@ class MyProfile extends React.Component {
     this.unsubscribe();
   }
 
-  // handles alert for delete post
-  showAlert = () => {
-    this.setState({
-      showAlert: true,
-    });
-  };
-
-  hideAlert = () => {
-    this.setState({
-      showAlert: false,
-    });
-  };
-
   /**
    * gets list of user posts
    * @returns GET/user/{user_id}/post API call
@@ -105,8 +89,8 @@ class MyProfile extends React.Component {
         } // todo need to add error handling conditions for other response codes
       })
       .then((responseJson) => {
-        console.log('GET/user/user_id/post response');
-        console.log(responseJson);
+        // console.log('GET/user/user_id/post response');
+        // console.log(responseJson);
         this.setState({
           isLoading: false,
           postList: responseJson,
@@ -127,14 +111,12 @@ class MyProfile extends React.Component {
     const id = await getUserId();
     const postId = await getPostId();
 
-    console.log(`Post id: ${post_id}`);
-
     return fetch(`http://localhost:3333/api/1.0.0/user/${id}/post/${post_id}`, {
       method: 'DELETE',
       headers: {
         'X-Authorization': token,
       },
-    })
+    }) // todo need to add error handling conditions for other response codes
       .then((response) => {
         if (response.status === 200) {
           console.log(`Post ${postId} deleted`);
@@ -150,8 +132,6 @@ class MyProfile extends React.Component {
   };
 
   render() {
-    const { showAlert } = this.state;
-
     if (this.state.isLoading) {
       return (
         <View>
@@ -160,15 +140,14 @@ class MyProfile extends React.Component {
       );
     }
     return (
-      <View style={styles.parentContainer}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.screenTitle}>HOME</Text>
+      <View style={GlobalStyles.profileParentContainer}>
+        <View style={GlobalStyles.profileHeaderContainer}>
+          <Text style={GlobalStyles.screenTitle}>HOME</Text>
         </View>
         <Text
           style={{ padding: 20, fontSize: 18 }}
           onPress={async () => {
             const profileId = await getUserId();
-            console.log(`profile id${profileId}`);
             this.props.navigation.navigate('AddPost', {
               profileId,
             });
@@ -182,22 +161,16 @@ class MyProfile extends React.Component {
             style={{ width: 350, height: 250 }}
           />
         </View>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            padding: 20,
-          }}
-        >
+        <View style={GlobalStyles.profileContainer}>
           <View>
             <Text
-              style={{ paddingBottom: 8, fontSize: 18, fontWeight: 'bold' }}
+              style={GlobalStyles.profileTextName}
             >{`${this.state.firstName.toUpperCase()} ${this.state.lastName.toUpperCase()}`}</Text>
             <Text
               style={{ paddingBottom: 8, fontSize: 18 }}
             >{`${this.state.emailAddress}`}</Text>
           </View>
-          <View style={styles.mediumButtonContainer2}>
+          <View style={styles.mediumButtonContainer}>
             <TouchableOpacity
               style={styles.mediumButton}
               onPress={() => {
@@ -218,7 +191,7 @@ class MyProfile extends React.Component {
         </View>
 
         <View style={{ paddingLeft: 20, paddingBottom: 10 }}>
-          <Text style={{ fontSize: 20, fontWeight: 'bold' }}>My Posts</Text>
+          <Text style={GlobalStyles.profileText}>My Posts</Text>
         </View>
         <FlatList
           data={this.state.postList}
@@ -231,7 +204,7 @@ class MyProfile extends React.Component {
                   onPress={async () => {
                     const p_userId = await getUserId();
                     const p_userPostId = item.post_id;
-                    console.log(`user id ${p_userId} post id ${p_userPostId}`);
+                    // console.log(`user id ${p_userId} post id ${p_userPostId}`);
                     this.props.navigation.navigate('MyPost', {
                       p_userId,
                       p_userPostId,
@@ -243,8 +216,7 @@ class MyProfile extends React.Component {
                 <TouchableOpacity
                   style={styles.deletePostButton}
                   onPress={() => {
-                    // this.showAlert(); // todo not working. not sure how to pass item
-                    this.deletePost(item.post_id).then(() => {});
+                    this.deletePost(item.post_id);
                   }}
                 >
                   <Text style={styles.deleteButtonText}>DELETE</Text>
@@ -260,26 +232,6 @@ class MyProfile extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  parentContainer: {
-    flex: 1,
-    justifyContent: 'flex-start',
-  },
-  headerContainer: {
-    width: '100vw',
-    backgroundColor: '#4453ce',
-    padding: 20,
-  },
-  screenTitle: {
-    fontSize: 20,
-    color: '#EBEB52FF',
-    fontWeight: 'bold',
-  },
-  textInput: {
-    fontSize: 20,
-    paddingTop: 25,
-    paddingLeft: 20,
-    alignItems: 'center',
-  },
   mediumButton: {
     backgroundColor: '#4453ce',
     width: 130,
@@ -294,10 +246,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   mediumButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-  },
-  mediumButtonContainer2: {
     flexDirection: 'column',
     justifyContent: 'space-evenly',
   },
@@ -319,13 +267,6 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     borderRadius: 5,
   },
-  deletePostButton: {
-    marginRight: 10,
-    width: 70,
-    backgroundColor: '#eb083a',
-    marginVertical: 10,
-    borderRadius: 5,
-  },
   editButtonText: {
     fontSize: 12,
     color: 'black',
@@ -333,43 +274,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
+  deletePostButton: {
+    marginRight: 10,
+    width: 70,
+    backgroundColor: '#eb083a',
+    marginVertical: 10,
+    borderRadius: 5,
+  },
   deleteButtonText: {
     fontSize: 12,
     color: 'white',
     paddingVertical: 8,
     fontWeight: 'bold',
     textAlign: 'center',
-  },
-  profileText: {
-    fontSize: 18,
-    paddingTop: 10,
-    paddingLeft: 20,
-  },
-  profileTextBold: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    paddingTop: 16,
-    paddingLeft: 20,
-  },
-  confirmButton: {
-    width: 100,
-    textAlign: 'center',
-    backgroundColor: '#45732b',
-  },
-  confirmButtonText: {
-    fontWeight: 'bold',
-    fontSize: 17,
-    color: 'white',
-  },
-  cancelButton: {
-    width: 100,
-    textAlign: 'center',
-    backgroundColor: '#f10933',
-  },
-  cancelButtonText: {
-    fontWeight: 'bold',
-    fontSize: 17,
-    color: 'white',
   },
 });
 

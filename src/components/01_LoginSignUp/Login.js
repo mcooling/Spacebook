@@ -143,15 +143,6 @@ class Login extends Component {
 export default Login;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  borderContainer: {
-    height: '100vh',
-    width: '100vw',
-  },
   messageText: {
     color: '#23341c',
     fontSize: 18,

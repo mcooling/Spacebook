@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  StyleSheet,
-  TextInput,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { TextInput, Text, TouchableOpacity, View } from 'react-native';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { getAuthToken, getUserId } from '../../utils/AsyncStorage';
 import { errorCodes } from '../../utils/ErrorCodes';
@@ -121,9 +115,9 @@ class MyPost extends React.Component {
         <View style={GlobalStyles.headerContainer}>
           <Text style={GlobalStyles.screenTitle}>MY POST</Text>
         </View>
-        <View style={styles.textInputContainer}>
+        <View style={GlobalStyles.textInputContainer}>
           <TextInput
-            style={styles.textInput}
+            style={GlobalStyles.postTextInput}
             underlineColorAndroid="transparent"
             placeholder={this.state.post.text}
             placeholderTextColor="#39407c"
@@ -133,9 +127,9 @@ class MyPost extends React.Component {
             value={this.state.textValue}
           />
         </View>
-        <View style={GlobalStyles.smallButtonContainer}>
+        <View style={GlobalStyles.mediumButtonContainer}>
           <TouchableOpacity
-            style={GlobalStyles.smallButton}
+            style={GlobalStyles.mediumButton}
             onPress={() => {
               this.updatePost().then(() => {
                 if (this.state.userId == getUserId()) {
@@ -149,7 +143,7 @@ class MyPost extends React.Component {
             <Text style={GlobalStyles.buttonText}>SUBMIT</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={GlobalStyles.smallButton}
+            style={GlobalStyles.mediumButton}
             onPress={() => {
               if (this.state.userId == getUserId()) {
                 this.props.navigation.navigate('MyProfile');
@@ -165,63 +159,5 @@ class MyPost extends React.Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  postText: {
-    fontSize: 15,
-    paddingTop: 10,
-    // paddingLeft: 20,
-    // alignContent: "center",
-    alignItems: 'center',
-  },
-  textInput: {
-    fontSize: 17,
-    paddingTop: 10,
-    paddingLeft: 10,
-    borderColor: '#bdbed9',
-    borderWidth: 1,
-    // outlineStyle: 'none',
-  },
-  textInputContainer: {
-    paddingHorizontal: 20,
-    marginTop: 20,
-  },
-  container: {
-    marginBottom: 15,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-  },
-  editPostButton: {
-    marginRight: 10,
-    width: 70,
-    backgroundColor: '#f59f0f',
-    // paddingTop: 10,
-    marginTop: 10,
-    borderRadius: 5,
-  },
-  deletePostButton: {
-    marginRight: 10,
-    width: 70,
-    backgroundColor: '#eb083a',
-    // paddingTop: 10,
-    marginTop: 10,
-    borderRadius: 5,
-  },
-  editButtonText: {
-    fontSize: 12,
-    color: 'black',
-    paddingVertical: 8,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  deleteButtonText: {
-    fontSize: 12,
-    color: 'white',
-    paddingVertical: 8,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-});
 
 export default MyPost;

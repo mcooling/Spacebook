@@ -33,7 +33,6 @@ class SearchUsers extends React.Component {
     this.searchUsers();
   }
 
-  // GET/search
   /**
    * searches users<br>
    * incorporates q, search_in, limit & offset queries
@@ -93,16 +92,12 @@ class SearchUsers extends React.Component {
           <Text style={GlobalStyles.screenTitle}>SEARCH USERS</Text>
         </View>
         <View>
-          <View style={GlobalStyles.smallButtonContainer}>
+          <View style={GlobalStyles.mediumButtonContainer}>
             <TextInput
               placeholder="User name: "
               onChangeText={(value) => this.setState({ searchValue: value })}
               value={this.state.searchValue}
-              style={{
-                fontSize: 21,
-                paddingVertical: 20,
-                outlineStyle: 'none',
-              }}
+              style={GlobalStyles.searchUserTextInput}
             />
           </View>
           <View>
@@ -139,7 +134,7 @@ class SearchUsers extends React.Component {
               }
             />
           </View>
-          <View style={GlobalStyles.smallButtonContainer}>
+          <View style={GlobalStyles.mediumButtonContainer}>
             <TouchableOpacity
               style={GlobalStyles.searchButtons}
               onPress={() => {

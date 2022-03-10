@@ -70,12 +70,9 @@ class MyDetails extends React.Component {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(patchRequestBody),
-    })
+    }) // todo add error handling - speak to nath
       .then(() => {
         console.log('Update successful');
-        console.log(
-          'UPDATE HARDCODED EMAIL IN LOGIN.JS, IF YOU JUST CHANGED EMAIL ADDRESS!'
-        );
         console.log(patchRequestBody);
       })
       .catch((error) => {
@@ -107,7 +104,7 @@ class MyDetails extends React.Component {
         <TouchableOpacity
           style={GlobalStyles.button}
           onPress={() => {
-            this.updateUserDetails().then(() => {});
+            this.updateUserDetails();
             this.props.navigation.navigate('MyProfile');
           }}
         >

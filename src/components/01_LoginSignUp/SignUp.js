@@ -8,7 +8,6 @@ import {
 } from 'react-native';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import GlobalStyles from '../../utils/GlobalStyles';
-import { errorCodes } from '../../utils/ErrorCodes';
 
 /**
  * handles user sign up
@@ -26,6 +25,10 @@ class SignUp extends React.Component {
     };
   }
 
+  /**
+   * show/hide alert functions<br>
+   * used by AwesomeAlert library
+   */
   showAlert = () => {
     this.setState({
       showAlert: true,
@@ -40,6 +43,7 @@ class SignUp extends React.Component {
 
   /**
    * @returns POST/user API call
+   * create new user account
    */
   createAccount = () => {
     if (this.state.password.length > 5) {
@@ -54,7 +58,7 @@ class SignUp extends React.Component {
           email: this.state.emailAddress,
           password: this.state.password,
         }),
-      })
+      }) // todo add error handling - speak to nath
         .then((response) => response.json())
         .then((json) => {
           console.log(json);
@@ -73,8 +77,8 @@ class SignUp extends React.Component {
     const { showAlert } = this.state;
 
     return (
-      <View style={styles.container}>
-        <View style={styles.borderContainer}>
+      <View style={GlobalStyles.loginSignupContainer}>
+        <View style={GlobalStyles.borderContainer}>
           <View style={GlobalStyles.headerContainer}>
             <Text style={GlobalStyles.screenTitle}>SIGNUP</Text>
           </View>
@@ -103,9 +107,9 @@ class SignUp extends React.Component {
             style={GlobalStyles.textInput}
             secureTextEntry
           />
-          <View style={GlobalStyles.smallButtonContainer}>
+          <View style={GlobalStyles.mediumButtonContainer}>
             <TouchableOpacity
-              style={GlobalStyles.smallButton}
+              style={GlobalStyles.mediumButton}
               onPress={() => {
                 this.createAccount();
               }}
@@ -113,7 +117,7 @@ class SignUp extends React.Component {
               <Text style={GlobalStyles.buttonText}>SIGNUP</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={GlobalStyles.smallButton}
+              style={GlobalStyles.mediumButton}
               onPress={() => {
                 this.props.navigation.navigate('Login');
               }}
@@ -147,15 +151,6 @@ class SignUp extends React.Component {
 export default SignUp;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  borderContainer: {
-    height: '100vh',
-    width: '100vw',
-  },
   messageText: {
     color: '#23341c',
     fontSize: 18,

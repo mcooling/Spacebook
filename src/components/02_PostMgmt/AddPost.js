@@ -29,6 +29,7 @@ class AddPost extends React.Component {
 
   /**
    * @returns POST/user/user_id/post API call
+   * adds new post to user profile
    */
   addPost = async () => {
     const token = await getAuthToken();
@@ -74,7 +75,7 @@ class AddPost extends React.Component {
         </View>
         <View style={styles.container}>
           <TextInput
-            style={styles.textInput}
+            style={GlobalStyles.postTextInput}
             underlineColorAndroid="transparent"
             placeholder="What's on your mind?"
             placeholderTextColor="#39407c"
@@ -86,7 +87,7 @@ class AddPost extends React.Component {
         </View>
         <View style={styles.smallButtonContainer}>
           <TouchableOpacity
-            style={styles.addPostButton}
+            style={GlobalStyles.mediumButton}
             onPress={() => {
               this.addPost();
             }}
@@ -153,14 +154,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     marginHorizontal: 10,
-  },
-  textInput: {
-    fontSize: 17,
-    paddingTop: 10,
-    paddingLeft: 10,
-    borderColor: '#bdbed9',
-    borderWidth: 1,
-    // outlineStyle: 'none',
   },
 });
 

@@ -55,10 +55,10 @@ class BottomTabNavigator extends Component {
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
-          tabBarActiveBackgroundColor: '#4453ce',
-          tabBarInactiveBackgroundColor: '#EBEB52FF',
-          tabBarActiveTintColor: '#EBEB52FF',
-          tabBarInactiveTintColor: '#4453ce',
+          tabBarInactiveBackgroundColor: '#9c20c6',
+          tabBarActiveBackgroundColor: '#7c105b',
+          tabBarInactiveTintColor: 'white',
+          tabBarActiveTintColor: 'white',
           tabBarStyle: { height: 58 },
           tabBarLabelStyle: {
             fontSize: 11,
@@ -110,7 +110,7 @@ class BottomTabNavigator extends Component {
             tabPress: (e) => {
               e.preventDefault();
               this.logoutUser();
-              console.log('Logout tab pressed');
+              // console.log('Logout tab pressed');
             },
           }}
         />

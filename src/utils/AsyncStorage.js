@@ -1,6 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// sets auth token value. called at login
+/**
+ * sets auth token value. called at login
+ * @param value auth token
+ */
 export const setAuthToken = async (value) => {
   try {
     await AsyncStorage.setItem('@auth_token', value);
@@ -9,7 +12,11 @@ export const setAuthToken = async (value) => {
   }
 };
 
-// gets user_id value. required by all API calls needing user id
+/**
+ * gets user_id value
+ * required by all API calls needing user id
+ * @returns user id
+ */
 export const getUserId = async () => {
   try {
     const userId = await AsyncStorage.getItem('@user_id');
@@ -20,7 +27,10 @@ export const getUserId = async () => {
   }
 };
 
-// sets user_id value. called at login
+/**
+ * sets user_id value. called at login
+ * @param value user id
+ */
 export const setUserId = async (value) => {
   try {
     await AsyncStorage.setItem('@user_id', value);
@@ -30,7 +40,11 @@ export const setUserId = async (value) => {
   }
 };
 
-// sets friend user_id value. called in MyFriends flatlist
+/**
+ * sets friend user_id value
+ * called in MyFriends flatlist
+ * @param value friend user id
+ */
 export const setFriendId = async (value) => {
   try {
     await AsyncStorage.setItem('@friend_id', value);
@@ -40,7 +54,10 @@ export const setFriendId = async (value) => {
   }
 };
 
-// gets friend user_id value
+/**
+ * gets friend user_id value
+ * @returns friend id
+ */
 export const getFriendId = async () => {
   try {
     const friendId = await AsyncStorage.getItem('@friend_id');
@@ -51,7 +68,11 @@ export const getFriendId = async () => {
   }
 };
 
-// gets auth token. required by all API calls needing x-auth
+/**
+ * gets auth token
+ * required by all API calls needing x-auth
+ * @returns auth token
+ */
 export const getAuthToken = async () => {
   try {
     const token = await AsyncStorage.getItem('@auth_token');
@@ -61,12 +82,18 @@ export const getAuthToken = async () => {
   }
 };
 
-// deletes auth token value from current session. called at logout
+/**
+ * deletes auth token value from current session.
+ * called at logout
+ */
 export const deleteAuthToken = async () => {
   await AsyncStorage.removeItem('@auth_token');
 };
 
-// sets post_id value. called at add post
+/**
+ * sets post_id value. called at add post
+ * @param value post id
+ */
 export const setPostId = async (value) => {
   try {
     await AsyncStorage.setItem('@post_id', value);
@@ -75,7 +102,10 @@ export const setPostId = async (value) => {
   }
 };
 
-// gets post id, required to delete posts
+/**
+ * gets post id, required to delete posts
+ * @returns post id
+ */
 export const getPostId = async () => {
   try {
     const postId = await AsyncStorage.getItem('@post_id');
@@ -85,41 +115,21 @@ export const getPostId = async () => {
   }
 };
 
-// adds profile post to draft
-// each post pushed to an array
-
-// add first post - calls addDraftPost (setItem)
-
+/**
+ * adds a draft post to async storage
+ * @param postText draft post text
+ */
 export const addDraftPost = async (postText) => {
   try {
     // get the existing array
     const draftPostArray = JSON.parse(
       await AsyncStorage.getItem('@draft_post')
     );
-    // console.log(draftPostArray);
-    // console.log(postText);
 
-    // create new json object to be added
-    // todo think i may need more logic here
-    // deleting a record doesn't update other ids
-    // so post id's no longer match element id for new posts
-    // tries to create new record with an id that already exists
-
-    // need to check array for post id values each time?
-
+    // create new object to add to array
     const postObject = { id: draftPostArray.length, post: postText };
     console.log(postObject);
 
-    // if item in get, append with the new thing i'm creating, then resend
-    // nothing, ned to create first item
-    // get current array from async storage - get what's currently stored
-    // add new post to end of array
-    // add back into async storage
-    // need to parse object to json. check the length
-    // new id = json.length
-    // don't need array.push anymore
-
-    // push new object into existing array
     draftPostArray.push(postObject);
 
     // update async storage with new array
@@ -130,14 +140,15 @@ export const addDraftPost = async (postText) => {
   }
 };
 
-// gets post from draft post array
+/**
+ * gets post from draft post array
+ * @returns {Promise<any>}
+ */
 export const getDraftPost = async () => {
   try {
     const getPostArray = await AsyncStorage.getItem('@draft_post');
 
     if (getPostArray != null) {
-      // we have draft posts
-      // console.log(JSON.parse(getPostArray));
       return JSON.parse(getPostArray); // converts string to json object
     }
   } catch (error) {
@@ -145,7 +156,10 @@ export const getDraftPost = async () => {
   }
 };
 
-// removes post from list of drafts
+/**
+ * removes post from list of drafts
+ * @param postId draft post id
+ */
 export const deleteDraftPost = async (postId) => {
   try {
     // get the existing array
@@ -170,8 +184,11 @@ export const deleteDraftPost = async (postId) => {
   }
 };
 
-// update draft post
-// todo not got this working quite right
+/**
+ * update existing draft post
+ * @param draftPost draft post text
+ * @param draftPostId draft post id
+ */
 export const updateDraftPost = async (draftPost, draftPostId) => {
   try {
     // get the existing array
@@ -183,12 +200,7 @@ export const updateDraftPost = async (draftPost, draftPostId) => {
       `Update post id ${draftPostId} with new text value ${draftPost}`
     );
 
-    // todo console error
-    // draftPostArray.update(postId, postText);
-    // draftPostArray.postId = postText;
     draftPostArray[draftPostId].post = draftPost;
-
-    // draftPostArray.splice(postId, 1);
 
     // update async storage with new array
     await AsyncStorage.setItem('@draft_post', JSON.stringify(draftPostArray));

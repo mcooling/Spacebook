@@ -11,6 +11,7 @@ export const getUserData = async () => {
   });
 };
 
+// GET/user/user_id/
 export const getFriendData = async () => {
   const token = await getAuthToken(); // get auth token
   const id = await getFriendId(); // get friend user id

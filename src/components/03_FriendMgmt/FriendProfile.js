@@ -6,15 +6,14 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ScrollView,
 } from 'react-native';
-import GlobalStyles from '../../utils/GlobalStyles';
 import {
   getFriendData,
   getFriendProfilePhoto,
 } from '../../utils/UtilFunctions';
 import { getAuthToken, getFriendId, getUserId } from '../../utils/AsyncStorage';
 import PostManager from '../02_PostMgmt/PostManager';
+import GlobalStyles from '../../utils/GlobalStyles';
 
 /**
  * displays user profile page<br>
@@ -39,8 +38,10 @@ class FriendProfile extends React.Component {
     };
   }
 
-  // did mount only runs once by default...listener makes sure it gets run each time i enter screen
-  // need to do this so my friends works in between tabs
+  /**
+   * mount function calls on entry to get friend photo & profile data
+   * also fires friend match function
+   */
   componentDidMount() {
     this.unsubscribe = this.props.navigation.addListener('focus', () => {
       getFriendProfilePhoto()
@@ -95,27 +96,19 @@ class FriendProfile extends React.Component {
       headers: {
         'X-Authorization': token,
       },
-    })
+    }) // todo add error handling - speak to nath
       .then((response) => response.json())
       .then((responseJson) => {
-        console.log(responseJson);
+        // console.log(responseJson);
         this.setState({
           friendList: responseJson,
         });
       })
       .then(() => {
-        console.log('Hello, you have reached friendMatch');
-        console.log(`The profile id is: ${profileId}`);
-
         const friendArray = this.state.friendList;
-        console.log(friendArray);
-
         const checkFriend = friendArray.some(function (userId) {
           return userId.user_id == profileId;
         });
-
-        console.log(checkFriend);
-
         console.log(`checkFriend function response: ${checkFriend}`);
 
         if (checkFriend) {
@@ -159,7 +152,7 @@ class FriendProfile extends React.Component {
           isLoading: false,
           postList: responseJson,
         });
-        console.log(`friend post objects: ${JSON.stringify(responseJson)}`);
+        // console.log(`friend post objects: ${JSON.stringify(responseJson)}`);
       })
       .catch((error) => {
         console.log(error);
@@ -201,31 +194,18 @@ class FriendProfile extends React.Component {
   render() {
     if (!this.state.isLoading) {
       return (
-        <View style={styles.parentContainer}>
-          <View style={styles.headerContainer}>
-            <Text style={styles.screenTitle}>PROFILE PAGE</Text>
+        <View style={GlobalStyles.profileParentContainer}>
+          <View style={GlobalStyles.profileHeaderContainer}>
+            <Text style={GlobalStyles.screenTitle}>PROFILE PAGE</Text>
           </View>
-          <View style={{ alignItems: 'center', paddingTop: 20 }}>
+          <View style={styles.pictureView}>
             <Image
               source={{ uri: this.state.photo }}
               style={{ width: 350, height: 250 }}
             />
           </View>
-          <View
-            style={{
-              padding: 20,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}
-          >
-            <Text
-              style={{
-                paddingBottom: 8,
-                fontSize: 18,
-                fontWeight: 'bold',
-                // justifyContent: 'center',
-              }}
-            >
+          <View style={GlobalStyles.profileContainer}>
+            <Text style={GlobalStyles.profileTextName}>
               {`${this.state.firstName.toUpperCase()} ${this.state.lastName.toUpperCase()}`}
             </Text>
             <View style={styles.friendButtonContainer}>
@@ -254,18 +234,15 @@ class FriendProfile extends React.Component {
               )}
             </View>
           </View>
-
           {this.state.alreadyFriend == true ? (
             <View style={{ flex: 1 }}>
               <View style={{ paddingHorizontal: 20, paddingVertical: 10 }}>
-                <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
-                  My Posts
-                </Text>
+                <Text style={GlobalStyles.profileText}>My Posts</Text>
               </View>
               <FlatList
                 data={this.state.postList}
                 renderItem={({ item }) => (
-                  <View style={styles.postContainer}>
+                  <View style={{ paddingLeft: 20 }}>
                     <PostManager
                       friendPost={item}
                       navigation={this.props.navigation}
@@ -288,31 +265,13 @@ class FriendProfile extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  parentContainer: {
-    flex: 1,
-    justifyContent: 'flex-start',
+  pictureView: {
+    alignItems: 'center',
+    paddingTop: 20,
   },
-  headerContainer: {
-    width: '100vw',
-    backgroundColor: '#4453ce',
-    padding: 20,
-  },
-  screenTitle: {
-    fontSize: 20,
-    color: '#EBEB52FF',
-    fontWeight: 'bold',
-  },
-  textInput: {
-    fontSize: 20,
-    paddingTop: 25,
+  friendButtonContainer: {
+    flexDirection: 'row',
     paddingLeft: 20,
-    alignItems: 'center',
-  },
-  mediumButton: {
-    backgroundColor: '#4453ce',
-    width: 170,
-    alignItems: 'center',
-    borderRadius: 5,
   },
   friendButton: {
     backgroundColor: '#4453ce',
@@ -325,130 +284,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
     paddingVertical: 10,
-  },
-  mediumButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-  },
-  friendButtonContainer: {
-    flexDirection: 'row',
-    // justifyContent: 'flex-end',
-    paddingLeft: 20,
-  },
-  postContainer: {
-    paddingLeft: 20,
-  },
-  postText: {
-    fontSize: 16,
-    alignItems: 'center',
-  },
-  smallButtonContainer: {
-    flexDirection: 'row',
-  },
-  editPostButton: {
-    marginRight: 10,
-    width: 70,
-    backgroundColor: '#f59f0f',
-    marginVertical: 10,
-    borderRadius: 5,
-  },
-  deletePostButton: {
-    marginRight: 10,
-    width: 70,
-    backgroundColor: '#eb083a',
-    marginVertical: 10,
-    borderRadius: 5,
-  },
-  editButtonText: {
-    fontSize: 12,
-    color: 'black',
-    paddingVertical: 8,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  deleteButtonText: {
-    fontSize: 12,
-    color: 'white',
-    paddingVertical: 8,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  // postText: {
-  //   fontSize: 15,
-  //   paddingTop: 10,
-  //   alignItems: 'center',
-  // },
-  profileText: {
-    fontSize: 18,
-    paddingTop: 10,
-    paddingLeft: 20,
-  },
-  profileTextBold: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    paddingTop: 16,
-    paddingLeft: 20,
-  },
-  container: {
-    marginBottom: 15,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-  },
-  // editPostButton: {
-  //   marginRight: 10,
-  //   width: 70,
-  //   backgroundColor: '#f59f0f',
-  //   // paddingTop: 10,
-  //   marginTop: 10,
-  //   borderRadius: 5,
-  // },
-  // deletePostButton: {
-  //   marginRight: 10,
-  //   width: 70,
-  //   backgroundColor: '#eb083a',
-  //   // paddingTop: 10,
-  //   marginTop: 10,
-  //   borderRadius: 5,
-  // },
-  // editButtonText: {
-  //   fontSize: 12,
-  //   color: 'black',
-  //   paddingVertical: 8,
-  //   fontWeight: 'bold',
-  //   textAlign: 'center',
-  // },
-  // deleteButtonText: {
-  //   fontSize: 12,
-  //   color: 'white',
-  //   paddingVertical: 8,
-  //   fontWeight: 'bold',
-  //   textAlign: 'center',
-  // },
-  alertContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  messageText: {
-    color: '#23341c',
-    fontSize: 18,
-    textAlign: 'center',
-  },
-  titleText: {
-    color: '#23341c',
-    fontSize: 20,
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  confirmButton: {
-    width: 100,
-    textAlign: 'center',
-    backgroundColor: '#45732b',
-  },
-  confirmButtonText: {
-    fontWeight: 'bold',
-    fontSize: 17,
   },
 });
 

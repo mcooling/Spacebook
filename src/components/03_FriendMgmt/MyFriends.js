@@ -1,8 +1,7 @@
 import React from 'react';
-import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { getUserId, getAuthToken, setFriendId } from '../../utils/AsyncStorage';
-import { getProfilePhoto } from '../../utils/UtilFunctions';
 
 /**
  * displays list of users friends<br>
@@ -49,6 +48,7 @@ class MyFriends extends React.Component {
           isLoading: false,
           friends: responseJson,
         });
+        console.log(responseJson);
       })
       .catch((error) => {
         console.log(error);
@@ -96,7 +96,7 @@ class MyFriends extends React.Component {
       headers: {
         'X-Authorization': token,
       },
-    })
+    }) // todo need to add error handling conditions for other response codes
       .then((response) => {
         if (response.status === 200) {
           this.getFriendRequests(); // clears down current list
@@ -110,7 +110,6 @@ class MyFriends extends React.Component {
       });
   };
 
-  // DELETE/friendrequests/user_id
   /**
    * rejects friend requests
    * @param id friend id
@@ -124,7 +123,7 @@ class MyFriends extends React.Component {
       headers: {
         'X-Authorization': token,
       },
-    })
+    }) // todo need to add error handling conditions for other response codes
       .then((response) => {
         if (response.status === 200) {
           this.getFriendRequests(); // clears down current list
@@ -168,7 +167,7 @@ class MyFriends extends React.Component {
                   style={GlobalStyles.friendButton}
                   onPress={() => {
                     setFriendId(item.user_id);
-                    console.log(item);
+                    // console.log(item);
                     this.props.navigation.navigate('FriendProfile');
                   }}
                 >

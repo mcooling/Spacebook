@@ -58,7 +58,7 @@ class UpdatePhoto extends Component {
         'X-Authorization': token,
       },
       body: blob,
-    })
+    }) // todo add error handling - speak to nath
       .then((response) => {
         console.log('Picture added', response);
         this.props.navigation.navigate('MyProfile');
@@ -71,9 +71,9 @@ class UpdatePhoto extends Component {
   render() {
     if (this.state.hasPermission) {
       return (
-        <View style={styles.container}>
+        <View style={{ flex: 1 }}>
           <Camera
-            style={styles.camera}
+            style={{ flex: 1 }}
             type={this.state.type}
             ref={(ref) => (this.camera = ref)}
           >
@@ -104,12 +104,6 @@ class UpdatePhoto extends Component {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  camera: {
-    flex: 1,
-  },
   buttonContainer: {
     flex: 1,
     backgroundColor: 'transparent',
