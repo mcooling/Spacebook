@@ -45,6 +45,10 @@ class Login extends Component {
    * @returns POST/login API call
    */
   loginUser = () => {
+    this.setState({
+      emailAddress: '',
+      password: '',
+    });
     return fetch('http://localhost:3333/api/1.0.0/login/', {
       method: 'POST',
       headers: {
@@ -54,10 +58,9 @@ class Login extends Component {
         email: this.state.emailAddress,
         password: this.state.password,
       }),
-    })
+    }) // todo add error handling - speak to nath
       .then((response) => response.json())
       .then((json) => {
-        console.log(json.status);
         console.log('Login successful');
         console.log(json);
         setUserId(json.id).then(() => {
@@ -68,7 +71,9 @@ class Login extends Component {
       })
       .catch((error) => {
         this.showAlert();
-        console.log(`Login unsuccessful: ${error}`);
+        console.log(
+          `Login unsuccessful: please enter correct username & password`
+        );
       });
   };
 
@@ -76,8 +81,8 @@ class Login extends Component {
     const { showAlert } = this.state;
 
     return (
-      <View style={styles.container}>
-        <View style={styles.borderContainer}>
+      <View style={GlobalStyles.loginSignupContainer}>
+        <View style={GlobalStyles.borderContainer}>
           <View style={GlobalStyles.headerContainer}>
             <Text style={GlobalStyles.screenTitle}>LOGIN</Text>
           </View>
@@ -94,9 +99,9 @@ class Login extends Component {
             style={GlobalStyles.textInput}
             secureTextEntry
           />
-          <View style={GlobalStyles.smallButtonContainer}>
+          <View style={GlobalStyles.mediumButtonContainer}>
             <TouchableOpacity
-              style={GlobalStyles.smallButton}
+              style={GlobalStyles.mediumButton}
               onPress={() => {
                 this.loginUser();
               }}
@@ -104,7 +109,7 @@ class Login extends Component {
               <Text style={GlobalStyles.buttonText}>LOGIN</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={GlobalStyles.smallButton}
+              style={GlobalStyles.mediumButton}
               onPress={() => {
                 this.props.navigation.navigate('SignUp');
               }}
