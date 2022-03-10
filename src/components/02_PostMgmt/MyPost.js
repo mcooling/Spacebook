@@ -102,7 +102,12 @@ class MyPost extends React.Component {
       .then(() => {
         console.log('Update successful');
         console.log(updatedText);
-        this.props.navigation.navigate('MyProfile');
+
+        if (this.state.userId == this.state.post.author.user_id) {
+          this.props.navigation.navigate('MyProfile');
+        } else {
+          this.props.navigation.navigate('FriendProfile');
+        }
       })
       .catch((error) => {
         console.log(error);
@@ -131,13 +136,8 @@ class MyPost extends React.Component {
           <TouchableOpacity
             style={GlobalStyles.mediumButton}
             onPress={() => {
-              this.updatePost().then(() => {
-                if (this.state.userId == getUserId()) {
-                  this.props.navigation.navigate('MyProfile');
-                } else {
-                  this.props.navigation.navigate('FriendProfile');
-                }
-              });
+              console.log(this.state.userId);
+              this.updatePost();
             }}
           >
             <Text style={GlobalStyles.buttonText}>SUBMIT</Text>
@@ -145,7 +145,8 @@ class MyPost extends React.Component {
           <TouchableOpacity
             style={GlobalStyles.mediumButton}
             onPress={() => {
-              if (this.state.userId == getUserId()) {
+              // console.log(this.state.userId);
+              if (this.state.userId == this.state.post.author.user_id) {
                 this.props.navigation.navigate('MyProfile');
               } else {
                 this.props.navigation.navigate('FriendProfile');
