@@ -116,6 +116,18 @@ export const getPostId = async () => {
 };
 
 /**
+ * sets draft_post key
+ * @param value post object (id & post text)
+ */
+export const setDraftPostArray = async (value) => {
+  try {
+    await AsyncStorage.setItem('@draft_post', value);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+/**
  * adds a draft post to async storage
  * @param postText draft post text
  */
@@ -126,15 +138,20 @@ export const addDraftPost = async (postText) => {
       await AsyncStorage.getItem('@draft_post')
     );
 
-    // create new object to add to array
-    const postObject = { id: draftPostArray.length, post: postText };
-    console.log(postObject);
-
-    draftPostArray.push(postObject);
-
-    // update async storage with new array
-    await AsyncStorage.setItem('@draft_post', JSON.stringify(draftPostArray));
-    console.log(draftPostArray);
+    // if post array doesn't exist, create it and add the draft post item
+    if (draftPostArray == null) {
+      const postObject = { id: 0, post: postText };
+      const newDraftPostArray = [postObject];
+      await AsyncStorage.setItem(
+        '@draft_post',
+        JSON.stringify(newDraftPostArray)
+      );
+      // else add the draft post item to the existing array
+    } else {
+      const postObject = { id: draftPostArray.length, post: postText };
+      draftPostArray.push(postObject);
+      await AsyncStorage.setItem('@draft_post', JSON.stringify(draftPostArray));
+    }
   } catch (error) {
     console.error(error);
   }
