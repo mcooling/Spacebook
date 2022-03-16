@@ -18,12 +18,12 @@ export default StyleSheet.create({
   },
   friendsContainer: {
     alignItems: 'flex-start',
-    marginTop: 20,
+    marginTop: 10,
   },
   searchFriendContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingTop: 10,
+    // paddingTop: 10,
   },
   mediumButtonContainer: {
     flexDirection: 'row',

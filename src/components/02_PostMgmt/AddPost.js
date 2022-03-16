@@ -84,7 +84,7 @@ class AddPost extends React.Component {
         </View>
         <View style={styles.smallButtonContainer}>
           <TouchableOpacity
-            style={GlobalStyles.mediumButton}
+            style={styles.postButtons}
             onPress={() => {
               this.addPost();
             }}
@@ -92,7 +92,7 @@ class AddPost extends React.Component {
             <Text style={GlobalStyles.buttonText}>POST</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.addPostButton}
+            style={styles.postButtons}
             onPress={() => {
               this.props.navigation.navigate('MyProfile');
             }}
@@ -102,7 +102,7 @@ class AddPost extends React.Component {
         </View>
         <View style={styles.smallButtonContainer}>
           <TouchableOpacity
-            style={styles.draftPostButton}
+            style={styles.draftPostButtons}
             onPress={() => {
               addDraftPost(this.state.postText);
               this.setState({ postText: '' });
@@ -111,7 +111,7 @@ class AddPost extends React.Component {
             <Text style={GlobalStyles.buttonText}>SAVE TO DRAFT</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.draftPostButton}
+            style={styles.draftPostButtons}
             onPress={() => {
               this.props.navigation.navigate('DraftPosts');
             }}
@@ -129,21 +129,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 20,
   },
-  addPostButton: {
+  postButtons: {
     alignItems: 'center',
     width: 170,
-    // backgroundColor: '#6369b8',
     backgroundColor: '#4453ce',
-    padding: 10,
+    paddingVertical: 10,
     marginTop: 20,
     borderRadius: 5,
   },
-  draftPostButton: {
+  draftPostButtons: {
     alignItems: 'center',
     width: 170,
-    // backgroundColor: '#6369b8',
     backgroundColor: '#744772',
-    padding: 10,
+    paddingVertical: 10,
     marginTop: 20,
     borderRadius: 5,
   },
