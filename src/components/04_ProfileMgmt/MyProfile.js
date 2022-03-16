@@ -7,9 +7,16 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { getProfilePhoto, getUserData } from '../../utils/UtilFunctions';
+import AwesomeAlert from 'react-native-awesome-alerts';
+import { getUserData } from '../../utils/UtilFunctions';
 import { getAuthToken, getPostId, getUserId } from '../../utils/AsyncStorage';
 import GlobalStyles from '../../utils/GlobalStyles';
+import {
+  deletePost,
+  getPostList,
+  getProfilePhoto,
+  getUserInfo,
+} from '../../utils/APIEndpoints';
 
 /**
  * Main user profile page<br>
@@ -29,12 +36,27 @@ class MyProfile extends React.Component {
       postList: [],
       showAlert: false,
       postId: 0,
+      alertMessage: '',
     };
   }
 
+  showAlert = () => {
+    this.setState({
+      showAlert: true,
+    });
+  };
+
+  hideAlert = () => {
+    this.setState({
+      showAlert: false,
+    });
+  };
+
   componentDidMount() {
-    this.unsubscribe = this.props.navigation.addListener('focus', () => {
-      getProfilePhoto()
+    this.unsubscribe = this.props.navigation.addListener('focus', async () => {
+      const token = await getAuthToken();
+      const userId = await getUserId();
+      getProfilePhoto(userId, token)
         .then((response) => {
           return response.blob();
         })
@@ -49,7 +71,8 @@ class MyProfile extends React.Component {
           console.log(error);
         });
 
-      getUserData()
+      getUserInfo(userId, token)
+        // getUserData()
         .then((response) => response.json())
         .then((responseJson) => {
           this.setState({
@@ -76,13 +99,8 @@ class MyProfile extends React.Component {
    */
   getPosts = async () => {
     const token = await getAuthToken();
-    const id = await getUserId();
-
-    return fetch(`http://localhost:3333/api/1.0.0/user/${id}/post`, {
-      headers: {
-        'X-Authorization': token,
-      },
-    })
+    const userId = await getUserId();
+    getPostList(userId, token)
       .then((response) => {
         if (response.status === 200) {
           return response.json();
@@ -106,24 +124,27 @@ class MyProfile extends React.Component {
    * @param post_id
    * @returns DELETE/user/{user_id}/post/{post_id} API call
    */
-  deletePost = async (post_id) => {
+  deleteMyPost = async (post_id) => {
     const token = await getAuthToken();
-    const id = await getUserId();
-    const postId = await getPostId();
+    const userId = await getUserId();
+    console.log(post_id);
 
-    return fetch(`http://localhost:3333/api/1.0.0/user/${id}/post/${post_id}`, {
-      method: 'DELETE',
-      headers: {
-        'X-Authorization': token,
-      },
-    }) // todo need to add error handling conditions for other response codes
+    deletePost(userId, post_id, token)
+      // todo need to add error handling conditions for other response codes
       .then((response) => {
         if (response.status === 200) {
-          console.log(`Post ${postId} deleted`);
+          console.log(`Post ${post_id} deleted`);
           this.getPosts();
-        } else {
-          console.log(response.status);
-          console.log(`User Id: ${this.id}`);
+        }
+        // todo not sure how to handle alert for double like. works differently to post manager, i.e. all in one class
+        if (response.status === 400 || response.status === 403) {
+          this.setState({
+            alertMessage:
+              'You cannot delete a post that has been liked. The like has to be removed' +
+              ' first',
+            showAlert: true,
+          });
+          // this.showAlert();
         }
       })
       .catch((error) => {
@@ -132,6 +153,8 @@ class MyProfile extends React.Component {
   };
 
   render() {
+    const { showAlert } = this.state;
+
     if (this.state.isLoading) {
       return (
         <View>
@@ -216,7 +239,15 @@ class MyProfile extends React.Component {
                 <TouchableOpacity
                   style={styles.deletePostButton}
                   onPress={() => {
-                    this.deletePost(item.post_id);
+                    this.setState({
+                      alertMessage:
+                        'Are you sure you want to delete this message?',
+                      showAlert: true,
+                      postId: item.post_id,
+                    });
+                    // console.log(this.state.postId);
+                    // this.showAlert();
+                    // this.deletePost(this.state.postId);
                   }}
                 >
                   <Text style={styles.deleteButtonText}>DELETE</Text>
@@ -225,6 +256,33 @@ class MyProfile extends React.Component {
             </View>
           )}
           keyExtractor={(item) => item.post_id.toString()}
+        />
+        {/* todo not sure how to handle alt message */}
+        <AwesomeAlert
+          show={showAlert}
+          showProgress={false}
+          title="Alert"
+          titleStyle={GlobalStyles.alertTitleText}
+          message={this.state.alertMessage}
+          messageStyle={GlobalStyles.alertMessageText}
+          closeOnTouchOutside
+          closeOnHardwareBackPress={false}
+          showCancelButton
+          cancelText="Cancel"
+          cancelButtonStyle={GlobalStyles.alertCancelButton}
+          cancelButtonTextStyle={GlobalStyles.alertCancelButtonText}
+          onCancelPressed={() => {
+            this.hideAlert();
+          }}
+          showConfirmButton
+          confirmText="Delete"
+          confirmButtonStyle={GlobalStyles.alertConfirmButton}
+          confirmButtonTextStyle={GlobalStyles.alertConfirmButtonText}
+          onConfirmPressed={() => {
+            this.deleteMyPost(this.state.postId).then(() => {
+              this.hideAlert();
+            });
+          }}
         />
       </View>
     );

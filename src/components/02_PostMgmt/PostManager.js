@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import AwesomeAlert from 'react-native-awesome-alerts';
 import {
   getAuthToken,
   getFriendId,
@@ -7,6 +8,7 @@ import {
   getUserId,
 } from '../../utils/AsyncStorage';
 import { errorCodes } from '../../utils/ErrorCodes';
+import { likePost, removeLikePost } from '../../utils/APIEndpoints';
 
 /**
  * handles CRUD and Like/Unlike functions, on posts to friend profiles<br>
@@ -26,6 +28,7 @@ class PostManager extends React.Component {
       numLikes: this.props.friendPost.numlikes,
       myUserId: 0,
       showAlert: false,
+      deleteAlert: false,
     };
   }
 
@@ -75,27 +78,24 @@ class PostManager extends React.Component {
    * passes friend id<br>
    * @returns POST/user/user_id/post/post_id/like API call
    */
-  likePost = async () => {
+  likeFriendPost = async () => {
     const token = await getAuthToken();
     const friendId = await getFriendId();
-    const { postId } = this.state;
+    // const { postId } = this.state;
     // console.log(`friend id: ${friendId} postId: ${postId}`);
-
-    return fetch(
-      `http://localhost:3333/api/1.0.0/user/${friendId}/post/${postId}/like`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Authorization': token,
-        },
-      }
-    ) // todo need to add error handling conditions for other response codes
+    likePost(friendId, this.state.postId, token)
+      // todo need to add error handling conditions for other response codes
       .then((response) => {
         if (response.status === 200) {
           console.log('Thanks for your like!');
         }
         if (response.status === 400 || response.status === 403) {
+          this.props.alertHandler(
+            true,
+            false,
+            'User has already liked this post.',
+            this.state.postId
+          );
           console.log('User has already liked this post');
         }
       })
@@ -112,19 +112,8 @@ class PostManager extends React.Component {
   removeLike = async () => {
     const token = await getAuthToken();
     const friendId = await getFriendId();
-    const { postId } = this.state;
     // console.log(`friend id: ${friendId} postId: ${postId}`);
-
-    return fetch(
-      `http://localhost:3333/api/1.0.0/user/${friendId}/post/${postId}/like`,
-      {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Authorization': token,
-        },
-      }
-    )
+    removeLikePost(friendId, this.state.postId, token)
       .then((response) => {
         if (response.status === 200) {
           console.log('Rude!');
@@ -140,35 +129,39 @@ class PostManager extends React.Component {
    * passes friend id<br>
    * @returns POST/user/user_id/post/post_id/like API call
    */
-  deletePost = async (post_id) => {
-    const token = await getAuthToken();
-    const friendId = await getFriendId();
-    const postId = await getPostId();
-
-    console.log(`Post id: ${post_id}`);
-
-    return fetch(
-      `http://localhost:3333/api/1.0.0/user/${friendId}/post/${post_id}`,
-      {
-        method: 'DELETE',
-        headers: {
-          'X-Authorization': token,
-        },
-      }
-    )
-      .then((response) => {
-        if (response.status === 200) {
-          console.log(`Post ${postId} deleted`);
-          this.getPosts();
-        } else {
-          console.log(response.status);
-          console.log(`User Id: ${this.id}`);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
+  // deletePost = async (post_id) => {
+  //   const token = await getAuthToken();
+  //   const friendId = await getFriendId();
+  //   const postId = await getPostId();
+  //
+  //   console.log(`Post id: ${post_id}`);
+  //
+  //   return fetch(
+  //     `http://localhost:3333/api/1.0.0/user/${friendId}/post/${post_id}`,
+  //     {
+  //       method: 'DELETE',
+  //       headers: {
+  //         'X-Authorization': token,
+  //       },
+  //     }
+  //   )
+  //     .then((response) => {
+  //       if (response.status === 200) {
+  //         console.log(`Post ${postId} deleted`);
+  //         this.getPosts();
+  //       }
+  //       if (response.status === 400 || response.status === 403) {
+  //         this.setState({
+  //           alertMessage:
+  //             'You cannot delete a post that has been liked. The like has to be removed' +
+  //             ' first',
+  //         });
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.log(error);
+  //     });
+  // };
 
   render() {
     return (
@@ -196,7 +189,14 @@ class PostManager extends React.Component {
               <TouchableOpacity
                 style={styles.deletePostButton}
                 onPress={() => {
-                  this.deletePost(this.state.postId);
+                  // todo still need to work out how to delete after 'OK'
+                  //  on click in friendprofile
+                  this.props.alertHandler(
+                    false,
+                    true,
+                    'Are you sure you want to delete this post?',
+                    this.state.postId
+                  );
                 }}
               >
                 <Text style={styles.deleteButtonText}>DELETE</Text>
@@ -210,7 +210,7 @@ class PostManager extends React.Component {
               <TouchableOpacity
                 style={styles.likePostButton}
                 onPress={() => {
-                  this.likePost();
+                  this.likeFriendPost();
                 }}
               >
                 <Text style={styles.editButtonText}>LIKE</Text>

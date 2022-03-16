@@ -2,6 +2,12 @@ import React from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { getUserId, getAuthToken, setFriendId } from '../../utils/AsyncStorage';
+import {
+  acceptFriendRequest,
+  getFriendRequests,
+  getFriendsList,
+  rejectFriendRequest,
+} from '../../utils/APIEndpoints';
 
 /**
  * displays list of users friends<br>
@@ -33,11 +39,7 @@ class MyFriends extends React.Component {
     const token = await getAuthToken();
     const userId = await getUserId();
 
-    return fetch(`http://localhost:3333/api/1.0.0/user/${userId}/friends`, {
-      headers: {
-        'X-Authorization': token,
-      },
-    })
+    getFriendsList(userId, token)
       .then((response) => {
         if (response.status === 200) {
           return response.json();
@@ -61,12 +63,7 @@ class MyFriends extends React.Component {
    */
   getFriendRequests = async () => {
     const token = await getAuthToken();
-
-    return fetch('http://localhost:3333/api/1.0.0/friendrequests/', {
-      headers: {
-        'X-Authorization': token,
-      },
-    })
+    getFriendRequests(token)
       .then((response) => {
         if (response.status === 200) {
           return response.json();
@@ -88,15 +85,10 @@ class MyFriends extends React.Component {
    * @param id friend id
    * @returns POST/friendrequests/user_id API call
    */
-  acceptFriendRequest = async (id) => {
+  acceptFriend = async (userId) => {
     const token = await getAuthToken();
-
-    return fetch(`http://localhost:3333/api/1.0.0/friendrequests/${id}`, {
-      method: 'POST',
-      headers: {
-        'X-Authorization': token,
-      },
-    }) // todo need to add error handling conditions for other response codes
+    acceptFriendRequest(userId, token)
+      // todo need to add error handling conditions for other response codes
       .then((response) => {
         if (response.status === 200) {
           this.getFriendRequests(); // clears down current list
@@ -115,15 +107,10 @@ class MyFriends extends React.Component {
    * @param id friend id
    * @returns DELETE/friendrequests/user_id API call
    */
-  rejectFriendRequest = async (id) => {
+  rejectFriend = async (userId) => {
     const token = await getAuthToken();
-
-    return fetch(`http://localhost:3333/api/1.0.0/friendrequests/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'X-Authorization': token,
-      },
-    }) // todo need to add error handling conditions for other response codes
+    rejectFriendRequest(userId, token)
+      // todo need to add error handling conditions for other response codes
       .then((response) => {
         if (response.status === 200) {
           this.getFriendRequests(); // clears down current list
@@ -193,7 +180,7 @@ class MyFriends extends React.Component {
                   <TouchableOpacity
                     style={GlobalStyles.friendRequestButton}
                     onPress={() => {
-                      this.acceptFriendRequest(item.user_id);
+                      this.acceptFriend(item.user_id);
                     }}
                   >
                     <Text style={GlobalStyles.buttonText}>ACCEPT</Text>
@@ -201,7 +188,7 @@ class MyFriends extends React.Component {
                   <TouchableOpacity
                     style={GlobalStyles.friendRequestButton}
                     onPress={() => {
-                      this.rejectFriendRequest(item.user_id);
+                      this.rejectFriend(item.user_id);
                     }}
                   >
                     <Text style={GlobalStyles.buttonText}>REJECT</Text>

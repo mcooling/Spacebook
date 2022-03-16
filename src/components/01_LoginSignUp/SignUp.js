@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import GlobalStyles from '../../utils/GlobalStyles';
+import { addNewUser } from '../../utils/APIEndpoints';
 
 /**
  * handles user sign up
@@ -46,20 +47,29 @@ class SignUp extends React.Component {
    * create new user account
    */
   createAccount = () => {
+    // console.log(this.state.firstName);
+    // console.log(this.state.lastName);
+    // console.log(this.state.emailAddress);
+    // console.log(this.state.password);
     if (this.state.password.length > 5) {
-      return fetch('http://localhost:3333/api/1.0.0/user/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          first_name: this.state.firstName,
-          last_name: this.state.lastName,
-          email: this.state.emailAddress,
-          password: this.state.password,
-        }),
-      }) // todo add error handling - speak to nath
-        .then((response) => response.json())
+      addNewUser(
+        this.state.firstName,
+        this.state.lastName,
+        this.state.emailAddress,
+        this.state.password
+      )
+        // todo add error handling - speak to nath
+        .then((response) => {
+          if (response.status === 201) {
+            return response.json();
+          }
+          if (response.status === 400) {
+            console.log('Error type 400: Bad Request');
+          }
+          if (response.status === 500) {
+            console.log('Error type 500: Server Error');
+          }
+        })
         .then((json) => {
           console.log(json);
           console.log('Signup successful');
@@ -68,9 +78,10 @@ class SignUp extends React.Component {
         .catch((error) => {
           console.log(`Signup unsuccessful: ${error}`);
         });
+    } else {
+      console.log('Password needs to be more than 5 characters');
+      this.showAlert();
     }
-    console.log('Password needs to be more than 5 characters');
-    this.showAlert();
   };
 
   render() {

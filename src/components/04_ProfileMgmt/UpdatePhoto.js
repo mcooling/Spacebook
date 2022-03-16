@@ -2,6 +2,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Camera } from 'expo-camera';
 import { Component } from 'react';
 import { getAuthToken, getUserId } from '../../utils/AsyncStorage';
+import { uploadProfilePhoto } from '../../utils/APIEndpoints';
 
 /**
  * lets user update profile picture<br>
@@ -45,20 +46,13 @@ class UpdatePhoto extends Component {
    * @returns POST/user/user_id/photo API call
    */
   sendPhotoToServer = async (data) => {
-    const id = await getUserId();
+    const userId = await getUserId();
     const token = await getAuthToken();
-
     const rawFile = await fetch(data.base64);
     const blob = await rawFile.blob();
 
-    return fetch(`http://localhost:3333/api/1.0.0/user/${id}/photo/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'image/png',
-        'X-Authorization': token,
-      },
-      body: blob,
-    }) // todo add error handling - speak to nath
+    uploadProfilePhoto(userId, blob, token)
+      // todo add error handling - speak to nath
       .then((response) => {
         console.log('Picture added', response);
         this.props.navigation.navigate('MyProfile');

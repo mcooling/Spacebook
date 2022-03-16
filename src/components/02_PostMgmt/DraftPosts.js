@@ -14,6 +14,7 @@ import {
   setPostId,
 } from '../../utils/AsyncStorage';
 import GlobalStyles from '../../utils/GlobalStyles';
+import { addNewPost } from '../../utils/APIEndpoints';
 
 /**
  * handles draft post functionality
@@ -59,16 +60,8 @@ class DraftPosts extends React.Component {
     const token = await getAuthToken();
     const userId = await getUserId();
 
-    return fetch(`http://localhost:3333/api/1.0.0/user/${userId}/post`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Authorization': token,
-      },
-      body: JSON.stringify({
-        text: postText,
-      }),
-    }) // todo add error handling - speak to nath
+    addNewPost(userId, token, postText)
+      // todo add error handling - speak to nath
       .then((response) => response.json())
       .then((json) => {
         console.log(`Post successful. Post ID: ${json.id}`);

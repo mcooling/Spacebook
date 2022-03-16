@@ -1,8 +1,9 @@
 import React from 'react';
 import { TextInput, Text, TouchableOpacity, View } from 'react-native';
 import GlobalStyles from '../../utils/GlobalStyles';
-import { getAuthToken, getUserId } from '../../utils/AsyncStorage';
+import { getAuthToken } from '../../utils/AsyncStorage';
 import { errorCodes } from '../../utils/ErrorCodes';
+import { updateSinglePost, viewSinglePost } from '../../utils/APIEndpoints';
 
 /**
  * displays details of a single post<br>
@@ -32,23 +33,15 @@ class MyPost extends React.Component {
   viewPost = async () => {
     const token = await getAuthToken();
     // console.log('I am here');
-    const user_id = this.props.route.params.p_userId;
-    const user_postId = this.props.route.params.p_userPostId;
+    // const user_id = this.props.route.params.p_userId;
+    // const user_postId = this.props.route.params.p_userPostId;
     // console.log(`user details: userid ${user_id} postid ${user_postId}`);
-
     this.setState({
-      userId: user_id,
-      postId: user_postId,
+      userId: this.props.route.params.p_userId,
+      postId: this.props.route.params.p_userPostId,
     });
-
-    return fetch(
-      `http://localhost:3333/api/1.0.0/user/${this.state.userId}/post/${this.state.postId}`,
-      {
-        headers: {
-          'X-Authorization': token,
-        },
-      }
-    ) // todo need to add error handling conditions for other response codes
+    viewSinglePost(this.state.userId, this.state.postId, token)
+      // todo need to add error handling conditions for other response codes
       .then((response) => {
         if (response.status === 200) {
           return response.json();
@@ -88,17 +81,13 @@ class MyPost extends React.Component {
       updatedText.text = this.state.textValue;
     }
 
-    return fetch(
-      `http://localhost:3333/api/1.0.0/user/${this.state.userId}/post/${this.state.postId}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'X-Authorization': token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedText),
-      }
-    ) // todo add error handling - speak to nath
+    await updateSinglePost(
+      this.state.userId,
+      this.state.postId,
+      token,
+      updatedText
+    )
+      // todo add error handling - speak to nath
       .then(() => {
         console.log('Update successful');
         console.log(updatedText);

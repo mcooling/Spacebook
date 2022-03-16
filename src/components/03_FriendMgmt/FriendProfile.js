@@ -7,13 +7,29 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import AwesomeAlert from 'react-native-awesome-alerts';
 import {
   getFriendData,
   getFriendProfilePhoto,
+  getAllFriends,
+  friendMatch,
 } from '../../utils/UtilFunctions';
-import { getAuthToken, getFriendId, getUserId } from '../../utils/AsyncStorage';
+import {
+  getAuthToken,
+  getFriendId,
+  getPostId,
+  getUserId,
+} from '../../utils/AsyncStorage';
 import PostManager from '../02_PostMgmt/PostManager';
 import GlobalStyles from '../../utils/GlobalStyles';
+import {
+  addFriend,
+  getFriendsList,
+  getPostList,
+  deletePost,
+  getUserInfo,
+  getProfilePhoto,
+} from '../../utils/APIEndpoints';
 
 /**
  * displays user profile page<br>
@@ -35,6 +51,11 @@ class FriendProfile extends React.Component {
       postList: [],
       friendList: [],
       alreadyFriend: false,
+      friendAlert: false, // controls friend request alert status
+      deleteAlert: false, // controls delete alert status
+      alertMessage: '',
+      postId: 0,
+      token: null,
     };
   }
 
@@ -43,8 +64,11 @@ class FriendProfile extends React.Component {
    * also fires friend match function
    */
   componentDidMount() {
-    this.unsubscribe = this.props.navigation.addListener('focus', () => {
-      getFriendProfilePhoto()
+    this.unsubscribe = this.props.navigation.addListener('focus', async () => {
+      const token = await getAuthToken(); // get auth token
+      const userId = await getFriendId(); // get user id
+      getProfilePhoto(userId, token)
+        // getFriendProfilePhoto()
         .then((response) => {
           return response.blob();
         })
@@ -53,13 +77,14 @@ class FriendProfile extends React.Component {
           this.setState({
             photo: data,
             isLoading: false,
+            token,
           });
         })
         .catch((error) => {
           console.log(error);
         });
 
-      getFriendData() // GET/user/user_id/
+      getUserInfo(userId, token)
         .then((response) => response.json())
         .then((responseJson) => {
           console.log(responseJson);
@@ -80,6 +105,24 @@ class FriendProfile extends React.Component {
     this.unsubscribe();
   }
 
+  // showAlert = () => {
+  //   this.setState({
+  //     showAlert: true,
+  //   });
+  // };
+  //
+  hideFriendAlert = () => {
+    this.setState({
+      friendAlert: false,
+    });
+  };
+
+  hideDeleteAlert = () => {
+    this.setState({
+      deleteAlert: false,
+    });
+  };
+
   /**
    * checks if user is a friend<br>
    * loops through friend list<br>
@@ -90,13 +133,9 @@ class FriendProfile extends React.Component {
   friendMatch = async () => {
     const token = await getAuthToken();
     const myId = await getUserId();
-    const profileId = await getFriendId();
 
-    return fetch(`http://localhost:3333/api/1.0.0/user/${myId}/friends`, {
-      headers: {
-        'X-Authorization': token,
-      },
-    }) // todo add error handling - speak to nath
+    getFriendsList(myId, token)
+      // todo add error handling - speak to nath
       .then((response) => response.json())
       .then((responseJson) => {
         // console.log(responseJson);
@@ -104,7 +143,8 @@ class FriendProfile extends React.Component {
           friendList: responseJson,
         });
       })
-      .then(() => {
+      .then(async () => {
+        const profileId = await getFriendId();
         const friendArray = this.state.friendList;
         const checkFriend = friendArray.some(function (userId) {
           return userId.user_id == profileId;
@@ -136,12 +176,7 @@ class FriendProfile extends React.Component {
   getPosts = async () => {
     const token = await getAuthToken();
     const friendId = await getFriendId();
-
-    return fetch(`http://localhost:3333/api/1.0.0/user/${friendId}/post`, {
-      headers: {
-        'X-Authorization': token,
-      },
-    })
+    getPostList(friendId, token)
       .then((response) => {
         if (response.status === 200) {
           return response.json();
@@ -170,13 +205,7 @@ class FriendProfile extends React.Component {
     const friendId = await getFriendId();
     // const friendId = this.props.route.params.profileId;
     console.log(`Friend id ${friendId}`);
-
-    return fetch(`http://localhost:3333/api/1.0.0/user/${friendId}/friends`, {
-      method: 'POST',
-      headers: {
-        'X-Authorization': token,
-      },
-    })
+    addFriend(friendId, token)
       .then((response) => {
         // console.log(response.status);
         if (response.status === 201) {
@@ -191,7 +220,35 @@ class FriendProfile extends React.Component {
       });
   };
 
+  deleteFriendPost = async () => {
+    const token = await getAuthToken();
+    const userId = await getFriendId();
+    console.log(userId);
+    console.log(this.state.postId);
+
+    deletePost(userId, this.state.postId, token)
+      .then((response) => {
+        if (response.status === 200) {
+          console.log(`Post ${this.state.postId} deleted`);
+          this.getPosts();
+        }
+        if (response.status === 400 || response.status === 403) {
+          this.setState({
+            alertMessage:
+              'You cannot delete a post that has been liked. The like has to be removed' +
+              ' first',
+          });
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   render() {
+    const { friendAlert } = this.state; // renders friend request alert
+    const { deleteAlert } = this.state; // renders delete friend post alert
+
     if (!this.state.isLoading) {
       return (
         <View style={GlobalStyles.profileParentContainer}>
@@ -226,6 +283,10 @@ class FriendProfile extends React.Component {
                 <TouchableOpacity
                   style={styles.friendButton}
                   onPress={() => {
+                    this.setState({
+                      friendAlert: true,
+                      alertMessage: 'Your friend request has been sent',
+                    });
                     this.sendFriendRequest();
                   }}
                 >
@@ -246,6 +307,14 @@ class FriendProfile extends React.Component {
                     <PostManager
                       friendPost={item}
                       navigation={this.props.navigation}
+                      alertHandler={(f_alert, d_alert, message, post_id) =>
+                        this.setState({
+                          friendAlert: f_alert,
+                          deleteAlert: d_alert,
+                          alertMessage: message,
+                          postId: post_id,
+                        })
+                      }
                     />
                   </View>
                 )}
@@ -253,6 +322,50 @@ class FriendProfile extends React.Component {
               />
             </View>
           ) : null}
+          <AwesomeAlert
+            show={friendAlert}
+            showProgress={false}
+            title="Alert" // would have to parameterise this also
+            titleStyle={GlobalStyles.alertTitleText}
+            message={this.state.alertMessage}
+            messageStyle={GlobalStyles.alertMessageText}
+            closeOnTouchOutside
+            closeOnHardwareBackPress={false}
+            showConfirmButton
+            confirmText="OK"
+            confirmButtonStyle={GlobalStyles.alertConfirmButton}
+            confirmButtonTextStyle={GlobalStyles.alertConfirmButtonText}
+            onConfirmPressed={() => {
+              this.hideFriendAlert();
+            }}
+          />
+          <AwesomeAlert
+            show={deleteAlert}
+            showProgress={false}
+            title="Alert" // would have to parameterise this also
+            titleStyle={GlobalStyles.alertTitleText}
+            message={this.state.alertMessage}
+            messageStyle={GlobalStyles.alertMessageText}
+            closeOnTouchOutside
+            closeOnHardwareBackPress={false}
+            showCancelButton
+            cancelText="Cancel"
+            cancelButtonStyle={GlobalStyles.alertCancelButton}
+            cancelButtonTextStyle={GlobalStyles.alertCancelButtonText}
+            onCancelPressed={() => {
+              this.hideDeleteAlert();
+            }}
+            showConfirmButton
+            confirmText="Delete"
+            confirmButtonStyle={GlobalStyles.alertConfirmButton}
+            confirmButtonTextStyle={GlobalStyles.alertConfirmButtonText}
+            onConfirmPressed={() => {
+              // todo not working. trying to work out how to call deletePost, in PostManager
+              this.deleteFriendPost().then(() => {
+                this.hideDeleteAlert();
+              });
+            }}
+          />
         </View>
       );
     }

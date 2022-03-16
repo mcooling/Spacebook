@@ -6,6 +6,7 @@ import { deleteAuthToken, getAuthToken } from '../utils/AsyncStorage';
 import ProfileStack from '../components/04_ProfileMgmt/ProfileStack';
 import Login from '../components/01_LoginSignUp/Login';
 import SearchUsers from '../components/03_FriendMgmt/SearchUsers';
+import { logout } from '../utils/APIEndpoints';
 
 const Tab = createBottomTabNavigator();
 
@@ -29,13 +30,8 @@ class BottomTabNavigator extends Component {
   };
 
   logoutUser = async () => {
-    const authToken = await getAuthToken();
-    return fetch('http://localhost:3333/api/1.0.0/logout/', {
-      method: 'POST',
-      headers: {
-        'X-Authorization': authToken,
-      },
-    })
+    const token = await getAuthToken();
+    logout(token)
       .then(async (response) => {
         if (response.status === 200) {
           console.log('Logout successful');

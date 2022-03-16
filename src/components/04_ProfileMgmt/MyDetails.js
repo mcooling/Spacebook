@@ -2,7 +2,7 @@ import React from 'react';
 import { TextInput, Text, TouchableOpacity, View } from 'react-native';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { getAuthToken, getUserId } from '../../utils/AsyncStorage';
-import { getUserData } from '../../utils/UtilFunctions';
+import { getUserInfo, updateUserInfo } from '../../utils/APIEndpoints';
 
 /**
  * handles profile updates<br>
@@ -20,11 +20,15 @@ class MyDetails extends React.Component {
       o_firstName: '',
       o_lastName: '',
       o_emailAddress: '',
+      userId: 0,
+      token: null,
     };
   }
 
-  componentDidMount() {
-    getUserData()
+  async componentDidMount() {
+    const token = await getAuthToken(); // get auth token
+    const userId = await getUserId(); // get user id
+    getUserInfo(userId, token)
       .then((response) => response.json())
       .then((responseJson) => {
         this.setState({
@@ -34,6 +38,8 @@ class MyDetails extends React.Component {
           o_firstName: responseJson.first_name,
           o_lastName: responseJson.last_name,
           o_emailAddress: responseJson.email,
+          userId,
+          token,
         });
       })
       .catch((error) => {
@@ -46,8 +52,8 @@ class MyDetails extends React.Component {
    * @returns PATCH/user{user_id} APi call
    */
   updateUserDetails = async () => {
-    const token = await getAuthToken();
-    const id = await getUserId();
+    // const token = await getAuthToken();
+    // const id = await getUserId();
 
     // stores updated items, to pass in patch request body
     const patchRequestBody = {};
@@ -63,14 +69,8 @@ class MyDetails extends React.Component {
       patchRequestBody.email = this.state.emailAddress;
     }
 
-    return fetch(`http://localhost:3333/api/1.0.0/user/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'X-Authorization': token,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(patchRequestBody),
-    }) // todo add error handling - speak to nath
+    updateUserInfo(this.state.userId, this.state.token, patchRequestBody)
+      // todo add error handling - speak to nath
       .then(() => {
         console.log('Update successful');
         console.log(patchRequestBody);

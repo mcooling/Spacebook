@@ -10,6 +10,7 @@ import CheckBox from 'react-native-check-box';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { getAuthToken, setFriendId } from '../../utils/AsyncStorage';
+import { searchAllUsers } from '../../utils/APIEndpoints';
 
 /**
  * handles user search functionality<br>
@@ -54,13 +55,11 @@ class SearchUsers extends React.Component {
       });
     }
 
-    return fetch(
-      `http://localhost:3333/api/1.0.0/search?q=${this.state.searchValue}&limit=5&offset=${this.state.offset}&search_in=${this.state.search_in}`,
-      {
-        headers: {
-          'X-Authorization': token,
-        },
-      }
+    searchAllUsers(
+      this.state.searchValue,
+      this.state.offset,
+      this.state.search_in,
+      token
     )
       .then((response) => {
         if (response.status === 200) {

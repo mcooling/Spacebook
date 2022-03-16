@@ -13,6 +13,7 @@ import {
   addDraftPost,
   getUserId,
 } from '../../utils/AsyncStorage';
+import { addNewPost } from '../../utils/APIEndpoints';
 
 /**
  * handles add post, to user & friend profiles
@@ -37,24 +38,16 @@ class AddPost extends React.Component {
     this.setState({
       user_id: userId,
     });
-    // console.log(`UserId HERE ${userId}`);
-
-    return fetch(`http://localhost:3333/api/1.0.0/user/${userId}/post`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Authorization': token,
-      },
-      body: JSON.stringify({
-        text: this.state.postText,
-      }),
-    }) // todo add error handling - speak to nath
+    addNewPost(userId, token, this.state.postText)
+      // todo add error handling - speak to nath
       .then((response) => response.json())
       .then((json) => {
         console.log(`Post successful. Post ID: ${json.id}`);
         // console.log(json);
         setPostId(json.id)
           .then(() => {
+            // todo this nav still isn't working - going to friend profile
+            //  see github
             if (this.state.user_id == getUserId()) {
               this.props.navigation.navigate('MyProfile');
             } else {

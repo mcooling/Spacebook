@@ -9,6 +9,7 @@ import {
 import AwesomeAlert from 'react-native-awesome-alerts';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { setAuthToken, setUserId } from '../../utils/AsyncStorage';
+import { login } from '../../utils/APIEndpoints';
 
 /**
  * Handles user login screen
@@ -49,17 +50,28 @@ class Login extends Component {
       emailAddress: '',
       password: '',
     });
-    return fetch('http://localhost:3333/api/1.0.0/login/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: this.state.emailAddress,
-        password: this.state.password,
-      }),
-    }) // todo add error handling - speak to nath
-      .then((response) => response.json())
+    login(this.state.emailAddress, this.state.password)
+      // return fetch('http://localhost:3333/api/1.0.0/login/', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     email: this.state.emailAddress,
+      //     password: this.state.password,
+      //   }),
+      // })
+      // todo add error handling - speak to nath
+      .then((response) => {
+        if (response.status === 200) {
+          return response.json();
+        }
+        if (response.status === 400) {
+          this.showAlert(); // parameterise with error message
+        }
+        if (response.status === 500) {
+        }
+      })
       .then((json) => {
         console.log('Login successful');
         console.log(json);
@@ -122,15 +134,15 @@ class Login extends Component {
           show={showAlert}
           showProgress={false}
           title="Login Failed"
-          titleStyle={styles.titleText}
+          titleStyle={GlobalStyles.alertTitleText}
           message="Please enter correct username / password and try again"
-          messageStyle={styles.messageText}
+          messageStyle={GlobalStyles.alertMessageText}
           closeOnTouchOutside
           closeOnHardwareBackPress={false}
           showConfirmButton
           confirmText="OK"
-          confirmButtonStyle={styles.confirmButton}
-          confirmButtonTextStyle={styles.confirmButtonText}
+          confirmButtonStyle={GlobalStyles.alertConfirmButton}
+          confirmButtonTextStyle={GlobalStyles.alertConfirmButtonText}
           onConfirmPressed={() => {
             this.hideAlert();
           }}
@@ -141,26 +153,3 @@ class Login extends Component {
 }
 
 export default Login;
-
-const styles = StyleSheet.create({
-  messageText: {
-    color: '#23341c',
-    fontSize: 18,
-    textAlign: 'center',
-  },
-  titleText: {
-    color: '#23341c',
-    fontSize: 20,
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  confirmButton: {
-    width: 100,
-    textAlign: 'center',
-    backgroundColor: '#45732b',
-  },
-  confirmButtonText: {
-    fontWeight: 'bold',
-    fontSize: 17,
-  },
-});

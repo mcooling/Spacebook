@@ -170,4 +170,35 @@ export default StyleSheet.create({
     marginTop: 20,
     borderRadius: 5,
   },
+
+  // alert styling
+  alertMessageText: {
+    color: '#23341c',
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  alertTitleText: {
+    color: '#23341c',
+    fontSize: 20,
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  alertCancelButton: {
+    width: 100,
+    textAlign: 'center',
+    backgroundColor: '#45732b',
+  },
+  alertCancelButtonText: {
+    fontWeight: 'bold',
+    fontSize: 17,
+  },
+  alertConfirmButton: {
+    width: 100,
+    textAlign: 'center',
+    backgroundColor: '#ea0d30',
+  },
+  alertConfirmButtonText: {
+    fontWeight: 'bold',
+    fontSize: 17,
+  },
 });
