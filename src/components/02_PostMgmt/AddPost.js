@@ -35,20 +35,24 @@ class AddPost extends React.Component {
   addPost = async () => {
     const token = await getAuthToken();
     const userId = this.props.route.params.profileId;
+    const { profileId } = this.props.route.params;
+    const myId = await getUserId();
     this.setState({
-      user_id: userId,
+      user_id: await getUserId(),
     });
     addNewPost(userId, token, this.state.postText)
       // todo add error handling - speak to nath
       .then((response) => response.json())
       .then((json) => {
         console.log(`Post successful. Post ID: ${json.id}`);
-        // console.log(json);
+        console.log(
+          `User id is ${this.state.user_id} and friend profile id is ${profileId}`
+        );
         setPostId(json.id)
           .then(() => {
             // todo this nav still isn't working - going to friend profile
             //  see github
-            if (this.state.user_id == getUserId()) {
+            if (myId == profileId) {
               this.props.navigation.navigate('MyProfile');
             } else {
               this.props.navigation.navigate('FriendProfile');
