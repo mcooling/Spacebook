@@ -1,9 +1,4 @@
-import {
-  getAuthToken,
-  getFriendId,
-  getPostId,
-  getUserId,
-} from './AsyncStorage';
+import { getAuthToken, getUserId } from './AsyncStorage';
 
 /** USER MANAGEMENT ENDPOINTS */
 

@@ -8,8 +8,7 @@ import {
   View,
 } from 'react-native';
 import AwesomeAlert from 'react-native-awesome-alerts';
-import { getUserData } from '../../utils/UtilFunctions';
-import { getAuthToken, getPostId, getUserId } from '../../utils/AsyncStorage';
+import { getAuthToken, getUserId } from '../../utils/AsyncStorage';
 import GlobalStyles from '../../utils/GlobalStyles';
 import {
   deletePost,

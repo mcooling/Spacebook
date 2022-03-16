@@ -1,11 +1,5 @@
 import React, { Component } from 'react';
-import {
-  TextInput,
-  Text,
-  TouchableOpacity,
-  View,
-  StyleSheet,
-} from 'react-native';
+import { TextInput, Text, TouchableOpacity, View } from 'react-native';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { setAuthToken, setUserId } from '../../utils/AsyncStorage';

@@ -1,13 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import AwesomeAlert from 'react-native-awesome-alerts';
-import {
-  getAuthToken,
-  getFriendId,
-  getPostId,
-  getUserId,
-} from '../../utils/AsyncStorage';
-import { errorCodes } from '../../utils/ErrorCodes';
+import { getAuthToken, getFriendId, getUserId } from '../../utils/AsyncStorage';
 import { likePost, removeLikePost } from '../../utils/APIEndpoints';
 
 /**

@@ -8,18 +8,7 @@ import {
   View,
 } from 'react-native';
 import AwesomeAlert from 'react-native-awesome-alerts';
-import {
-  getFriendData,
-  getFriendProfilePhoto,
-  getAllFriends,
-  friendMatch,
-} from '../../utils/UtilFunctions';
-import {
-  getAuthToken,
-  getFriendId,
-  getPostId,
-  getUserId,
-} from '../../utils/AsyncStorage';
+import { getAuthToken, getFriendId, getUserId } from '../../utils/AsyncStorage';
 import PostManager from '../02_PostMgmt/PostManager';
 import GlobalStyles from '../../utils/GlobalStyles';
 import {
