@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import CheckBox from 'react-native-check-box';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import AwesomeAlert from 'react-native-awesome-alerts';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { getAuthToken, setFriendId } from '../../utils/AsyncStorage';
 import { searchAllUsers } from '../../utils/APIEndpoints';
@@ -27,6 +28,8 @@ class SearchUsers extends React.Component {
       isVisible: false,
       isChecked: false,
       search_in: 'all',
+      showAlert: false,
+      alertMessage: '',
     };
   }
 
@@ -64,10 +67,27 @@ class SearchUsers extends React.Component {
       .then((response) => {
         if (response.status === 200) {
           return response.json();
-        } // todo need to add error handling conditions for other response codes
+        }
+        if (response.status === 400) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 401: Bad Request',
+          });
+        }
+        if (response.status === 401) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 401: Unauthorized',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
+        }
       })
       .then((responseJson) => {
-        console.log(responseJson);
         this.setState({
           users: responseJson,
         });
@@ -78,6 +98,8 @@ class SearchUsers extends React.Component {
   };
 
   render() {
+    const { showAlert } = this.state;
+
     if (this.state.isLoading) {
       return (
         <View>
@@ -152,7 +174,6 @@ class SearchUsers extends React.Component {
                 onPress={() => {
                   this.state.offset += 5;
                   this.searchUsers();
-                  console.log(`offset value: ${this.state.offset}`);
                   this.setState({
                     isVisible: true,
                   });
@@ -167,7 +188,6 @@ class SearchUsers extends React.Component {
                 onPress={() => {
                   this.state.offset -= 5;
                   this.searchUsers();
-                  console.log(`offset value: ${this.state.offset}`);
                   this.setState({
                     isVisible: true,
                   });
@@ -195,7 +215,6 @@ class SearchUsers extends React.Component {
                 style={GlobalStyles.button}
                 onPress={() => {
                   setFriendId(item.user_id);
-                  console.log(item);
                   this.props.navigation.navigate('FriendProfile');
                 }}
               >
@@ -204,6 +223,23 @@ class SearchUsers extends React.Component {
             </View>
           )}
           keyExtractor={(item) => item.user_id.toString()}
+        />
+        <AwesomeAlert
+          show={showAlert}
+          showProgress={false}
+          title="Alert"
+          titleStyle={GlobalStyles.alertTitleText}
+          message={this.state.alertMessage}
+          messageStyle={GlobalStyles.alertMessageText}
+          closeOnTouchOutside
+          closeOnHardwareBackPress={false}
+          showConfirmButton
+          confirmText="OK"
+          confirmButtonStyle={GlobalStyles.alertConfirmButton}
+          confirmButtonTextStyle={GlobalStyles.alertConfirmButtonText}
+          onConfirmPressed={() => {
+            this.setState({ showAlert: false });
+          }}
         />
       </View>
     );

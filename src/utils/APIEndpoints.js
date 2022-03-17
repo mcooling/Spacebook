@@ -110,16 +110,16 @@ export const getFriendsList = async (userId, token) => {
 };
 
 // GET/user/{user_id}/friends
-// todo - find usage - duplicate
-export const getAllFriends = async () => {
-  const token = await getAuthToken(); // get auth token
-  const id = await getUserId(); // get user id
-  return fetch(`http://localhost:3333/api/1.0.0/user/${id}/friends`, {
-    headers: {
-      'X-Authorization': token,
-    },
-  });
-};
+// todo think this is an obsolete
+// export const getAllFriends = async () => {
+//   const token = await getAuthToken(); // get auth token
+//   const id = await getUserId(); // get user id
+//   return fetch(`http://localhost:3333/api/1.0.0/user/${id}/friends`, {
+//     headers: {
+//       'X-Authorization': token,
+//     },
+//   });
+// };
 
 // POST/user/{user_id}/friends
 export const addFriend = async (friendId, token) => {

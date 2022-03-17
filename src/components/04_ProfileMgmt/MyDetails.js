@@ -1,5 +1,6 @@
 import React from 'react';
 import { TextInput, Text, TouchableOpacity, View } from 'react-native';
+import AwesomeAlert from 'react-native-awesome-alerts';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { getAuthToken, getUserId } from '../../utils/AsyncStorage';
 import { getUserInfo, updateUserInfo } from '../../utils/APIEndpoints';
@@ -22,6 +23,8 @@ class MyDetails extends React.Component {
       o_emailAddress: '',
       userId: 0,
       token: null,
+      showAlert: false,
+      alertMessage: '',
     };
   }
 
@@ -52,9 +55,6 @@ class MyDetails extends React.Component {
    * @returns PATCH/user{user_id} APi call
    */
   updateUserDetails = async () => {
-    // const token = await getAuthToken();
-    // const id = await getUserId();
-
     // stores updated items, to pass in patch request body
     const patchRequestBody = {};
 
@@ -70,10 +70,40 @@ class MyDetails extends React.Component {
     }
 
     updateUserInfo(this.state.userId, this.state.token, patchRequestBody)
-      // todo add error handling - speak to nath
-      .then(() => {
-        console.log('Update successful');
-        console.log(patchRequestBody);
+      .then((response) => {
+        if (response.status === 200) {
+          return response.json();
+        }
+        if (response.status === 400) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 400: Bad Request',
+          });
+        }
+        if (response.status === 401) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 401: Unauthorized',
+          });
+        }
+        if (response.status === 403) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 404: Forbidden',
+          });
+        }
+        if (response.status === 404) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 404: Not Found',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
+        }
       })
       .catch((error) => {
         console.log(error);
@@ -81,6 +111,8 @@ class MyDetails extends React.Component {
   };
 
   render() {
+    const { showAlert } = this.state;
+
     return (
       <View>
         <View style={GlobalStyles.headerContainer}>
@@ -118,6 +150,23 @@ class MyDetails extends React.Component {
         >
           <Text style={GlobalStyles.buttonText}>CANCEL</Text>
         </TouchableOpacity>
+        <AwesomeAlert
+          show={showAlert}
+          showProgress={false}
+          title="Alert"
+          titleStyle={GlobalStyles.alertTitleText}
+          message={this.state.alertMessage}
+          messageStyle={GlobalStyles.alertMessageText}
+          closeOnTouchOutside
+          closeOnHardwareBackPress={false}
+          showConfirmButton
+          confirmText="OK"
+          confirmButtonStyle={GlobalStyles.alertConfirmButton}
+          confirmButtonTextStyle={GlobalStyles.alertConfirmButtonText}
+          onConfirmPressed={() => {
+            this.setState({ showAlert: false });
+          }}
+        />
       </View>
     );
   }

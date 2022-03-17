@@ -6,6 +6,7 @@ import {
   View,
 } from 'react-native';
 import React from 'react';
+import AwesomeAlert from 'react-native-awesome-alerts';
 import {
   deleteDraftPost,
   getAuthToken,
@@ -30,6 +31,8 @@ class DraftPosts extends React.Component {
       drafts: [],
       o_postText: '',
       postText: '',
+      showAlert: false,
+      alertMessage: '',
     };
   }
 
@@ -47,7 +50,6 @@ class DraftPosts extends React.Component {
       this.setState({
         drafts: response,
       });
-      console.log(response);
     });
   };
 
@@ -61,18 +63,39 @@ class DraftPosts extends React.Component {
     const userId = await getUserId();
 
     addNewPost(userId, token, postText)
-      // todo add error handling - speak to nath
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.status === 201) {
+          return response.json();
+        }
+        if (response.status === 401) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 401: Unauthorized',
+          });
+        }
+        if (response.status === 404) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 404: Not Found',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
+        }
+      })
       .then((json) => {
-        console.log(`Post successful. Post ID: ${json.id}`);
-        console.log(json);
         setPostId(json.id).catch((error) => {
-          console.log(`Post unsuccessful: ${error}`);
+          console.log(error);
         });
       });
   };
 
   render() {
+    const { showAlert } = this.state;
+
     if (this.state.isLoading) {
       return (
         <View>
@@ -104,13 +127,11 @@ class DraftPosts extends React.Component {
                   <TouchableOpacity
                     style={styles.postDraftButton}
                     onPress={() => {
-                      // setFriendId(item.user_id);
                       this.postDraft(item.post).then(() => {
                         deleteDraftPost(item.id).then(() => {
                           this.getDraft();
                         });
                       });
-                      console.log(`Post id: ${item.id}`);
                     }}
                   >
                     <Text style={GlobalStyles.buttonText}>POST</Text>
@@ -119,7 +140,6 @@ class DraftPosts extends React.Component {
                     style={styles.updateDraftButton}
                     onPress={() => {
                       const d_post = item;
-                      // console.log(`user id ${p_userId} post id ${p_userPostId}`);
                       this.props.navigation.navigate('UpdateDraft', {
                         d_post,
                       });
@@ -143,6 +163,23 @@ class DraftPosts extends React.Component {
             keyExtractor={(item) => item.id}
           />
         </View>
+        <AwesomeAlert
+          show={showAlert}
+          showProgress={false}
+          title="Alert"
+          titleStyle={GlobalStyles.alertTitleText}
+          message={this.state.alertMessage}
+          messageStyle={GlobalStyles.alertMessageText}
+          closeOnTouchOutside
+          closeOnHardwareBackPress={false}
+          showConfirmButton
+          confirmText="OK"
+          confirmButtonStyle={GlobalStyles.alertConfirmButton}
+          confirmButtonTextStyle={GlobalStyles.alertConfirmButtonText}
+          onConfirmPressed={() => {
+            this.setState({ showAlert: false });
+          }}
+        />
       </View>
     );
   }

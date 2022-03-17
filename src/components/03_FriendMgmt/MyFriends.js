@@ -1,5 +1,6 @@
 import React from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import AwesomeAlert from 'react-native-awesome-alerts';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { getUserId, getAuthToken, setFriendId } from '../../utils/AsyncStorage';
 import {
@@ -23,6 +24,8 @@ class MyFriends extends React.Component {
       friends: [],
       isLoading: true,
       photo: null,
+      friendAlert: false,
+      alertMessage: '',
     };
   }
 
@@ -43,14 +46,38 @@ class MyFriends extends React.Component {
       .then((response) => {
         if (response.status === 200) {
           return response.json();
-        } // todo need to add error handling conditions for other response codes
+        }
+        if (response.status === 401) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 401: Unauthorized',
+          });
+        }
+        if (response.status === 403) {
+          this.setState({
+            friendAlert: true,
+            alertMessage:
+              'Error code 403: You can only view the friends of yourself or your friends',
+          });
+        }
+        if (response.status === 404) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 404: Not Found',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
+        }
       })
       .then((responseJson) => {
         this.setState({
           isLoading: false,
           friends: responseJson,
         });
-        console.log(responseJson);
       })
       .catch((error) => {
         console.log(error);
@@ -67,7 +94,19 @@ class MyFriends extends React.Component {
       .then((response) => {
         if (response.status === 200) {
           return response.json();
-        } // todo need to add error handling conditions for other response codes
+        }
+        if (response.status === 404) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 404: Not Found',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
+        }
       })
       .then((responseJson) => {
         this.setState({
@@ -88,13 +127,28 @@ class MyFriends extends React.Component {
   acceptFriend = async (userId) => {
     const token = await getAuthToken();
     acceptFriendRequest(userId, token)
-      // todo need to add error handling conditions for other response codes
       .then((response) => {
         if (response.status === 200) {
           this.getFriendRequests(); // clears down current list
           this.getFriends(); // update friends list with new friend
-        } else {
-          console.log(response.status);
+        }
+        if (response.status === 401) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 401: Unauthorized',
+          });
+        }
+        if (response.status === 404) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 404: Not Found',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
         }
       })
       .catch((error) => {
@@ -110,12 +164,27 @@ class MyFriends extends React.Component {
   rejectFriend = async (userId) => {
     const token = await getAuthToken();
     rejectFriendRequest(userId, token)
-      // todo need to add error handling conditions for other response codes
       .then((response) => {
         if (response.status === 200) {
           this.getFriendRequests(); // clears down current list
-        } else {
-          console.log(response.status);
+        }
+        if (response.status === 401) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 401: Unauthorized',
+          });
+        }
+        if (response.status === 404) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 404: Not Found',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
         }
       })
       .catch((error) => {
@@ -124,6 +193,8 @@ class MyFriends extends React.Component {
   };
 
   render() {
+    const { friendAlert } = this.state;
+
     if (this.state.isLoading) {
       return (
         <View>
@@ -154,7 +225,6 @@ class MyFriends extends React.Component {
                   style={GlobalStyles.friendButton}
                   onPress={() => {
                     setFriendId(item.user_id);
-                    // console.log(item);
                     this.props.navigation.navigate('FriendProfile');
                   }}
                 >
@@ -199,6 +269,23 @@ class MyFriends extends React.Component {
             keyExtractor={(item) => item.user_id.toString()}
           />
         </View>
+        <AwesomeAlert
+          show={friendAlert}
+          showProgress={false}
+          title="Alert"
+          titleStyle={GlobalStyles.alertTitleText}
+          message={this.state.alertMessage}
+          messageStyle={GlobalStyles.alertMessageText}
+          closeOnTouchOutside
+          closeOnHardwareBackPress={false}
+          showConfirmButton
+          confirmText="OK"
+          confirmButtonStyle={GlobalStyles.alertConfirmButton}
+          confirmButtonTextStyle={GlobalStyles.alertConfirmButtonText}
+          onConfirmPressed={() => {
+            this.setState({ friendAlert: false });
+          }}
+        />
       </View>
     );
   }

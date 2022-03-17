@@ -40,6 +40,7 @@ class PostManager extends React.Component {
    * fetches list of friends posts
    * @returns GET/user/user_id/post/ API call
    */
+  // todo is this doing anything?
   getPosts = async () => {
     const token = await getAuthToken();
     const friendId = await getFriendId();
@@ -52,7 +53,7 @@ class PostManager extends React.Component {
       .then((response) => {
         if (response.status === 200) {
           return response.json();
-        } // todo need to add error handling conditions for other response codes
+        }
       })
       .then((responseJson) => {
         this.setState({
@@ -74,22 +75,39 @@ class PostManager extends React.Component {
   likeFriendPost = async () => {
     const token = await getAuthToken();
     const friendId = await getFriendId();
-    // const { postId } = this.state;
-    // console.log(`friend id: ${friendId} postId: ${postId}`);
     likePost(friendId, this.state.postId, token)
-      // todo need to add error handling conditions for other response codes
       .then((response) => {
         if (response.status === 200) {
-          console.log('Thanks for your like!');
+          this.props.alertHandler(
+            true,
+            false,
+            'Thank you for your like!',
+            this.state.postId
+          );
         }
         if (response.status === 400 || response.status === 403) {
           this.props.alertHandler(
             true,
             false,
-            'User has already liked this post.',
+            'You have already liked this post.',
             this.state.postId
           );
-          console.log('User has already liked this post');
+        }
+        if (response.status === 404) {
+          this.props.alertHandler(
+            true,
+            false,
+            'Error code 404: Not Found',
+            this.state.postId
+          );
+        }
+        if (response.status === 500) {
+          this.props.alertHandler(
+            true,
+            false,
+            'Error code 500: Server Error',
+            this.state.postId
+          );
         }
       })
       .catch((error) => {
@@ -105,12 +123,48 @@ class PostManager extends React.Component {
   removeLike = async () => {
     const token = await getAuthToken();
     const friendId = await getFriendId();
-    // console.log(`friend id: ${friendId} postId: ${postId}`);
     removeLikePost(friendId, this.state.postId, token)
       .then((response) => {
         if (response.status === 200) {
-          console.log('Rude!');
-        } // todo need to add error handling conditions for other response codes
+          this.props.alertHandler(
+            true,
+            false,
+            'Your like has been removed',
+            this.state.postId
+          );
+        }
+        if (response.status === 401) {
+          this.props.alertHandler(
+            true,
+            false,
+            'Error code 404: Unauthorized',
+            this.state.postId
+          );
+        }
+        if (response.status === 403) {
+          this.props.alertHandler(
+            true,
+            false,
+            'Forbidden: you have not liked this post.',
+            this.state.postId
+          );
+        }
+        if (response.status === 404) {
+          this.props.alertHandler(
+            true,
+            false,
+            'Error code 404: Not Found',
+            this.state.postId
+          );
+        }
+        if (response.status === 500) {
+          this.props.alertHandler(
+            true,
+            false,
+            'Error code 500: Server Error',
+            this.state.postId
+          );
+        }
       })
       .catch((error) => {
         console.log(error);
@@ -122,39 +176,6 @@ class PostManager extends React.Component {
    * passes friend id<br>
    * @returns POST/user/user_id/post/post_id/like API call
    */
-  // deletePost = async (post_id) => {
-  //   const token = await getAuthToken();
-  //   const friendId = await getFriendId();
-  //   const postId = await getPostId();
-  //
-  //   console.log(`Post id: ${post_id}`);
-  //
-  //   return fetch(
-  //     `http://localhost:3333/api/1.0.0/user/${friendId}/post/${post_id}`,
-  //     {
-  //       method: 'DELETE',
-  //       headers: {
-  //         'X-Authorization': token,
-  //       },
-  //     }
-  //   )
-  //     .then((response) => {
-  //       if (response.status === 200) {
-  //         console.log(`Post ${postId} deleted`);
-  //         this.getPosts();
-  //       }
-  //       if (response.status === 400 || response.status === 403) {
-  //         this.setState({
-  //           alertMessage:
-  //             'You cannot delete a post that has been liked. The like has to be removed' +
-  //             ' first',
-  //         });
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.log(error);
-  //     });
-  // };
 
   render() {
     return (
@@ -169,7 +190,6 @@ class PostManager extends React.Component {
                   const p_userId = await getFriendId();
                   // const p_userId = this.state.myUserId;
                   const p_userPostId = this.state.postId;
-                  console.log(`user id ${p_userId} post id ${p_userPostId}`);
                   this.props.navigation.navigate('MyPost', {
                     p_userId,
                     p_userPostId,
@@ -182,8 +202,6 @@ class PostManager extends React.Component {
               <TouchableOpacity
                 style={styles.deletePostButton}
                 onPress={() => {
-                  // todo still need to work out how to delete after 'OK'
-                  //  on click in friendprofile
                   this.props.alertHandler(
                     false,
                     true,

@@ -6,6 +6,7 @@ import {
   View,
   TextInput,
 } from 'react-native';
+import AwesomeAlert from 'react-native-awesome-alerts';
 import GlobalStyles from '../../utils/GlobalStyles';
 import {
   getAuthToken,
@@ -25,6 +26,8 @@ class AddPost extends React.Component {
     this.state = {
       postText: '',
       user_id: 0,
+      showAlert: false,
+      alertMessage: '',
     };
   }
 
@@ -41,17 +44,32 @@ class AddPost extends React.Component {
       user_id: await getUserId(),
     });
     addNewPost(userId, token, this.state.postText)
-      // todo add error handling - speak to nath
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.status === 201) {
+          return response.json();
+        }
+        if (response.status === 401) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 401: Unauthorized',
+          });
+        }
+        if (response.status === 404) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 404: Not Found',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
+        }
+      })
       .then((json) => {
-        console.log(`Post successful. Post ID: ${json.id}`);
-        console.log(
-          `User id is ${this.state.user_id} and friend profile id is ${profileId}`
-        );
         setPostId(json.id)
           .then(() => {
-            // todo this nav still isn't working - going to friend profile
-            //  see github
             if (myId == profileId) {
               this.props.navigation.navigate('MyProfile');
             } else {
@@ -59,12 +77,14 @@ class AddPost extends React.Component {
             }
           })
           .catch((error) => {
-            console.log(`Post unsuccessful: ${error}`);
+            console.log(error);
           });
       });
   };
 
   render() {
+    const { showAlert } = this.state;
+
     return (
       <View>
         <View style={GlobalStyles.headerContainer}>
@@ -119,6 +139,23 @@ class AddPost extends React.Component {
             <Text style={GlobalStyles.buttonText}>VIEW DRAFTS</Text>
           </TouchableOpacity>
         </View>
+        <AwesomeAlert
+          show={showAlert}
+          showProgress={false}
+          title="Alert"
+          titleStyle={GlobalStyles.alertTitleText}
+          message={this.state.alertMessage}
+          messageStyle={GlobalStyles.alertMessageText}
+          closeOnTouchOutside
+          closeOnHardwareBackPress={false}
+          showConfirmButton
+          confirmText="OK"
+          confirmButtonStyle={GlobalStyles.alertConfirmButton}
+          confirmButtonTextStyle={GlobalStyles.alertConfirmButtonText}
+          onConfirmPressed={() => {
+            this.setState({ showAlert: false });
+          }}
+        />
       </View>
     );
   }

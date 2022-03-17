@@ -16,24 +16,9 @@ class Login extends Component {
       emailAddress: 'thom@yorke.com',
       password: 'hello123',
       showAlert: false,
+      alertMessage: '',
     };
   }
-
-  /**
-   * show/hide alert functions<br>
-   * used by AwesomeAlert library
-   */
-  showAlert = () => {
-    this.setState({
-      showAlert: true,
-    });
-  };
-
-  hideAlert = () => {
-    this.setState({
-      showAlert: false,
-    });
-  };
 
   /**
    * Sets user id and auth token in AsyncStorage<br>
@@ -45,30 +30,25 @@ class Login extends Component {
       password: '',
     });
     login(this.state.emailAddress, this.state.password)
-      // return fetch('http://localhost:3333/api/1.0.0/login/', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     email: this.state.emailAddress,
-      //     password: this.state.password,
-      //   }),
-      // })
-      // todo add error handling - speak to nath
       .then((response) => {
         if (response.status === 200) {
           return response.json();
         }
         if (response.status === 400) {
-          this.showAlert(); // parameterise with error message
+          this.setState({
+            showAlert: true,
+            alertMessage:
+              'Please enter correct username / password and try again',
+          });
         }
         if (response.status === 500) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
         }
       })
       .then((json) => {
-        console.log('Login successful');
-        console.log(json);
         setUserId(json.id).then(() => {
           setAuthToken(json.token).then(() => {
             this.props.navigation.navigate('Main');
@@ -76,10 +56,7 @@ class Login extends Component {
         });
       })
       .catch((error) => {
-        this.showAlert();
-        console.log(
-          `Login unsuccessful: please enter correct username & password`
-        );
+        console.log(error);
       });
   };
 
@@ -127,9 +104,9 @@ class Login extends Component {
         <AwesomeAlert
           show={showAlert}
           showProgress={false}
-          title="Login Failed"
+          title="Alert"
           titleStyle={GlobalStyles.alertTitleText}
-          message="Please enter correct username / password and try again"
+          message={this.state.alertMessage}
           messageStyle={GlobalStyles.alertMessageText}
           closeOnTouchOutside
           closeOnHardwareBackPress={false}
@@ -138,7 +115,7 @@ class Login extends Component {
           confirmButtonStyle={GlobalStyles.alertConfirmButton}
           confirmButtonTextStyle={GlobalStyles.alertConfirmButtonText}
           onConfirmPressed={() => {
-            this.hideAlert();
+            this.setState({ showAlert: false });
           }}
         />
       </View>

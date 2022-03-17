@@ -1,5 +1,6 @@
 import React from 'react';
 import { TextInput, Text, TouchableOpacity, View } from 'react-native';
+import AwesomeAlert from 'react-native-awesome-alerts';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { getAuthToken } from '../../utils/AsyncStorage';
 import { errorCodes } from '../../utils/ErrorCodes';
@@ -19,6 +20,8 @@ class MyPost extends React.Component {
       o_textValue: '',
       userId: 0,
       postId: 0,
+      showAlert: false,
+      alertMessage: '',
     };
   }
 
@@ -32,26 +35,40 @@ class MyPost extends React.Component {
    */
   viewPost = async () => {
     const token = await getAuthToken();
-    // console.log('I am here');
-    // const user_id = this.props.route.params.p_userId;
-    // const user_postId = this.props.route.params.p_userPostId;
-    // console.log(`user details: userid ${user_id} postid ${user_postId}`);
     this.setState({
       userId: this.props.route.params.p_userId,
       postId: this.props.route.params.p_userPostId,
     });
     viewSinglePost(this.state.userId, this.state.postId, token)
-      // todo need to add error handling conditions for other response codes
       .then((response) => {
         if (response.status === 200) {
           return response.json();
         }
-        if (response.status === 403) {
-          console.log(
-            'Error code 403: You can only view the posts of yourself or your friends'
-          );
+        if (response.status === 401) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 401: Unauthorized',
+          });
         }
-        errorCodes(response); // todo not working as expected
+        if (response.status === 403) {
+          this.setState({
+            showAlert: true,
+            alertMessage:
+              'Error code 403: You can only view the posts of yourself or your friends',
+          });
+        }
+        if (response.status === 404) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 404: Not Found',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
+        }
       })
       .then((responseJson) => {
         this.setState({ post: responseJson });
@@ -59,10 +76,6 @@ class MyPost extends React.Component {
           textValue: responseJson.text,
           o_textValue: responseJson.text,
         });
-        // console.log(`Post ID: ${responseJson.post_id}`);
-        // console.log(`Post Text: ${responseJson.text}`);
-        // console.log('Full GET response');
-        console.log(responseJson);
       })
       .catch((error) => {
         console.log(error);
@@ -80,18 +93,48 @@ class MyPost extends React.Component {
     if (this.state.textValue !== this.state.o_textValue) {
       updatedText.text = this.state.textValue;
     }
-
     await updateSinglePost(
       this.state.userId,
       this.state.postId,
       token,
       updatedText
     )
-      // todo add error handling - speak to nath
+      .then((response) => {
+        if (response.status === 200) {
+          return response.json();
+        }
+        if (response.status === 400) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 400: Bad Request',
+          });
+        }
+        if (response.status === 401) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 401: Unauthorized',
+          });
+        }
+        if (response.status === 403) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 403: You can only update your own posts',
+          });
+        }
+        if (response.status === 404) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 404: Not Found',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
+        }
+      })
       .then(() => {
-        console.log('Update successful');
-        console.log(updatedText);
-
         if (this.state.userId == this.state.post.author.user_id) {
           this.props.navigation.navigate('MyProfile');
         } else {
@@ -104,6 +147,8 @@ class MyPost extends React.Component {
   };
 
   render() {
+    const { showAlert } = this.state;
+
     return (
       <View>
         <View style={GlobalStyles.headerContainer}>
@@ -125,7 +170,6 @@ class MyPost extends React.Component {
           <TouchableOpacity
             style={GlobalStyles.mediumButton}
             onPress={() => {
-              console.log(this.state.userId);
               this.updatePost();
             }}
           >
@@ -134,7 +178,6 @@ class MyPost extends React.Component {
           <TouchableOpacity
             style={GlobalStyles.mediumButton}
             onPress={() => {
-              // console.log(this.state.userId);
               if (this.state.userId == this.state.post.author.user_id) {
                 this.props.navigation.navigate('MyProfile');
               } else {
@@ -145,6 +188,23 @@ class MyPost extends React.Component {
             <Text style={GlobalStyles.buttonText}>CANCEL</Text>
           </TouchableOpacity>
         </View>
+        <AwesomeAlert
+          show={showAlert}
+          showProgress={false}
+          title="Alert"
+          titleStyle={GlobalStyles.alertTitleText}
+          message={this.state.alertMessage}
+          messageStyle={GlobalStyles.alertMessageText}
+          closeOnTouchOutside
+          closeOnHardwareBackPress={false}
+          showConfirmButton
+          confirmText="OK"
+          confirmButtonStyle={GlobalStyles.alertConfirmButton}
+          confirmButtonTextStyle={GlobalStyles.alertConfirmButtonText}
+          onConfirmPressed={() => {
+            this.setState({ showAlert: false });
+          }}
+        />
       </View>
     );
   }

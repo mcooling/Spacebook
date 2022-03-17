@@ -20,7 +20,6 @@ export const setAuthToken = async (value) => {
 export const getUserId = async () => {
   try {
     const userId = await AsyncStorage.getItem('@user_id');
-    // console.log(`get user id = ${userId}`);
     return userId;
   } catch (error) {
     console.error(error);
@@ -34,7 +33,6 @@ export const getUserId = async () => {
 export const setUserId = async (value) => {
   try {
     await AsyncStorage.setItem('@user_id', value);
-    // console.log(`set user id = ${value}`);
   } catch (error) {
     console.error(error);
   }
@@ -48,7 +46,6 @@ export const setUserId = async (value) => {
 export const setFriendId = async (value) => {
   try {
     await AsyncStorage.setItem('@friend_id', value);
-    // console.log(`set friend id = ${value}`);
   } catch (error) {
     console.error(error);
   }
@@ -61,7 +58,6 @@ export const setFriendId = async (value) => {
 export const getFriendId = async () => {
   try {
     const friendId = await AsyncStorage.getItem('@friend_id');
-    // console.log(`get friend id = ${friendId}`);
     return friendId;
   } catch (error) {
     console.error(error);
@@ -183,8 +179,6 @@ export const deleteDraftPost = async (postId) => {
     const draftPostArray = JSON.parse(
       await AsyncStorage.getItem('@draft_post')
     );
-    console.log(draftPostArray);
-    console.log(`Post id to be deleted: ${postId}`);
 
     draftPostArray.splice(postId, 1);
 
@@ -211,10 +205,6 @@ export const updateDraftPost = async (draftPost, draftPostId) => {
     // get the existing array
     const draftPostArray = JSON.parse(
       await AsyncStorage.getItem('@draft_post')
-    );
-    console.log(draftPostArray);
-    console.log(
-      `Update post id ${draftPostId} with new text value ${draftPost}`
     );
 
     draftPostArray[draftPostId].post = draftPost;

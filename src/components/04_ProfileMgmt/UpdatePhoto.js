@@ -36,7 +36,6 @@ class UpdatePhoto extends Component {
         onPictureSaved: (data) => this.sendPhotoToServer(data),
       };
       const data = await this.camera.takePictureAsync(options);
-      console.log(data.uri);
     }
   };
 
@@ -52,7 +51,35 @@ class UpdatePhoto extends Component {
     const blob = await rawFile.blob();
 
     uploadProfilePhoto(userId, blob, token)
-      // todo add error handling - speak to nath
+      .then((response) => {
+        if (response.status === 200) {
+          return response.json();
+        }
+        if (response.status === 400) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 400: Bad Request',
+          });
+        }
+        if (response.status === 401) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 401: Unauthorized',
+          });
+        }
+        if (response.status === 404) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 404: Not Found',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
+        }
+      })
       .then((response) => {
         console.log('Picture added', response);
         this.props.navigation.navigate('MyProfile');

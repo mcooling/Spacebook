@@ -106,7 +106,6 @@ class BottomTabNavigator extends Component {
             tabPress: (e) => {
               e.preventDefault();
               this.logoutUser();
-              // console.log('Logout tab pressed');
             },
           }}
         />

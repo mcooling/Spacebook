@@ -23,34 +23,15 @@ class SignUp extends React.Component {
       emailAddress: '',
       password: '',
       showAlert: false,
+      alertMessage: '',
     };
   }
-
-  /**
-   * show/hide alert functions<br>
-   * used by AwesomeAlert library
-   */
-  showAlert = () => {
-    this.setState({
-      showAlert: true,
-    });
-  };
-
-  hideAlert = () => {
-    this.setState({
-      showAlert: false,
-    });
-  };
 
   /**
    * @returns POST/user API call
    * create new user account
    */
   createAccount = () => {
-    // console.log(this.state.firstName);
-    // console.log(this.state.lastName);
-    // console.log(this.state.emailAddress);
-    // console.log(this.state.password);
     if (this.state.password.length > 5) {
       addNewUser(
         this.state.firstName,
@@ -58,29 +39,35 @@ class SignUp extends React.Component {
         this.state.emailAddress,
         this.state.password
       )
-        // todo add error handling - speak to nath
         .then((response) => {
           if (response.status === 201) {
             return response.json();
           }
           if (response.status === 400) {
-            console.log('Error type 400: Bad Request');
+            this.setState({
+              showAlert: true,
+              alertMessage: 'Error type 400: Bad Request',
+            });
           }
           if (response.status === 500) {
-            console.log('Error type 500: Server Error');
+            this.setState({
+              showAlert: true,
+              alertMessage: 'Error type 500: Server Error',
+            });
           }
         })
-        .then((json) => {
-          console.log(json);
-          console.log('Signup successful');
+        .then(() => {
           this.props.navigation.navigate('Login');
         })
         .catch((error) => {
-          console.log(`Signup unsuccessful: ${error}`);
+          console.log(error);
         });
     } else {
-      console.log('Password needs to be more than 5 characters');
-      this.showAlert();
+      this.setState({
+        showAlert: true,
+        alertMessage:
+          'The password needs to be more than five characters. Please try again',
+      });
     }
   };
 
@@ -140,9 +127,9 @@ class SignUp extends React.Component {
         <AwesomeAlert
           show={showAlert}
           showProgress={false}
-          title="Signup Failed"
+          title="Alert"
           titleStyle={styles.titleText}
-          message="The password needs to be more than five characters. Please try again."
+          message={this.state.alertMessage}
           messageStyle={styles.messageText}
           closeOnTouchOutside
           closeOnHardwareBackPress={false}
@@ -151,7 +138,7 @@ class SignUp extends React.Component {
           confirmButtonStyle={styles.confirmButton}
           confirmButtonTextStyle={styles.confirmButtonText}
           onConfirmPressed={() => {
-            this.hideAlert();
+            this.setState({ showAlert: false });
           }}
         />
       </View>

@@ -33,23 +33,11 @@ class MyProfile extends React.Component {
       photo: null,
       isLoading: true,
       postList: [],
-      showAlert: false,
       postId: 0,
+      showAlert: false,
       alertMessage: '',
     };
   }
-
-  showAlert = () => {
-    this.setState({
-      showAlert: true,
-    });
-  };
-
-  hideAlert = () => {
-    this.setState({
-      showAlert: false,
-    });
-  };
 
   componentDidMount() {
     this.unsubscribe = this.props.navigation.addListener('focus', async () => {
@@ -103,11 +91,33 @@ class MyProfile extends React.Component {
       .then((response) => {
         if (response.status === 200) {
           return response.json();
-        } // todo need to add error handling conditions for other response codes
+        }
+        if (response.status === 401) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 401: Unauthorized',
+          });
+        }
+        if (response.status === 403) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 404: Forbidden',
+          });
+        }
+        if (response.status === 404) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 404: Not Found',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
+        }
       })
       .then((responseJson) => {
-        // console.log('GET/user/user_id/post response');
-        // console.log(responseJson);
         this.setState({
           isLoading: false,
           postList: responseJson,
@@ -126,16 +136,12 @@ class MyProfile extends React.Component {
   deleteMyPost = async (post_id) => {
     const token = await getAuthToken();
     const userId = await getUserId();
-    console.log(post_id);
 
     deletePost(userId, post_id, token)
-      // todo need to add error handling conditions for other response codes
       .then((response) => {
         if (response.status === 200) {
-          console.log(`Post ${post_id} deleted`);
           this.getPosts();
         }
-        // todo not sure how to handle alert for double like. works differently to post manager, i.e. all in one class
         if (response.status === 400 || response.status === 403) {
           this.setState({
             alertMessage:
@@ -143,7 +149,24 @@ class MyProfile extends React.Component {
               ' first',
             showAlert: true,
           });
-          // this.showAlert();
+        }
+        if (response.status === 401) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 401: Unauthorized',
+          });
+        }
+        if (response.status === 404) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 404: Not Found',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            showAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
         }
       })
       .catch((error) => {
@@ -226,7 +249,6 @@ class MyProfile extends React.Component {
                   onPress={async () => {
                     const p_userId = await getUserId();
                     const p_userPostId = item.post_id;
-                    // console.log(`user id ${p_userId} post id ${p_userPostId}`);
                     this.props.navigation.navigate('MyPost', {
                       p_userId,
                       p_userPostId,
@@ -239,14 +261,11 @@ class MyProfile extends React.Component {
                   style={styles.deletePostButton}
                   onPress={() => {
                     this.setState({
+                      showAlert: true,
                       alertMessage:
                         'Are you sure you want to delete this message?',
-                      showAlert: true,
                       postId: item.post_id,
                     });
-                    // console.log(this.state.postId);
-                    // this.showAlert();
-                    // this.deletePost(this.state.postId);
                   }}
                 >
                   <Text style={styles.deleteButtonText}>DELETE</Text>
@@ -256,7 +275,6 @@ class MyProfile extends React.Component {
           )}
           keyExtractor={(item) => item.post_id.toString()}
         />
-        {/* todo not sure how to handle alt message */}
         <AwesomeAlert
           show={showAlert}
           showProgress={false}
@@ -271,7 +289,7 @@ class MyProfile extends React.Component {
           cancelButtonStyle={GlobalStyles.alertCancelButton}
           cancelButtonTextStyle={GlobalStyles.alertCancelButtonText}
           onCancelPressed={() => {
-            this.hideAlert();
+            this.setState({ showAlert: false });
           }}
           showConfirmButton
           confirmText="Delete"
@@ -279,7 +297,7 @@ class MyProfile extends React.Component {
           confirmButtonTextStyle={GlobalStyles.alertConfirmButtonText}
           onConfirmPressed={() => {
             this.deleteMyPost(this.state.postId).then(() => {
-              this.hideAlert();
+              this.setState({ showAlert: false });
             });
           }}
         />

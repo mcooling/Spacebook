@@ -57,7 +57,6 @@ class FriendProfile extends React.Component {
       const token = await getAuthToken(); // get auth token
       const userId = await getFriendId(); // get user id
       getProfilePhoto(userId, token)
-        // getFriendProfilePhoto()
         .then((response) => {
           return response.blob();
         })
@@ -76,7 +75,6 @@ class FriendProfile extends React.Component {
       getUserInfo(userId, token)
         .then((response) => response.json())
         .then((responseJson) => {
-          console.log(responseJson);
           this.setState({
             firstName: responseJson.first_name,
             lastName: responseJson.last_name,
@@ -94,12 +92,6 @@ class FriendProfile extends React.Component {
     this.unsubscribe();
   }
 
-  // showAlert = () => {
-  //   this.setState({
-  //     showAlert: true,
-  //   });
-  // };
-  //
   hideFriendAlert = () => {
     this.setState({
       friendAlert: false,
@@ -124,10 +116,38 @@ class FriendProfile extends React.Component {
     const myId = await getUserId();
 
     getFriendsList(myId, token)
-      // todo add error handling - speak to nath
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.status === 200) {
+          return response.json();
+        }
+        if (response.status === 401) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 401: Unauthorized',
+          });
+        }
+        if (response.status === 403) {
+          this.setState({
+            friendAlert: true,
+            alertMessage:
+              'Error code 403: You can only view the friends of yourself or your friends',
+          });
+        }
+        if (response.status === 404) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 404: Not Found',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
+        }
+      })
+
       .then((responseJson) => {
-        // console.log(responseJson);
         this.setState({
           friendList: responseJson,
         });
@@ -138,23 +158,20 @@ class FriendProfile extends React.Component {
         const checkFriend = friendArray.some(function (userId) {
           return userId.user_id == profileId;
         });
-        console.log(`checkFriend function response: ${checkFriend}`);
 
         if (checkFriend) {
-          console.log('Thanks for being my friend');
           this.setState({
             alreadyFriend: true,
           });
           this.getPosts();
         } else {
-          console.log('Please be my friend');
           this.setState({
             alreadyFriend: false,
           });
         }
       })
       .catch((error) => {
-        console.log(`Post unsuccessful: ${error}`);
+        console.log(error);
       });
   };
 
@@ -169,14 +186,38 @@ class FriendProfile extends React.Component {
       .then((response) => {
         if (response.status === 200) {
           return response.json();
-        } // todo need to add error handling conditions for other response codes
+        }
+        if (response.status === 401) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 401: Unauthorized',
+          });
+        }
+        if (response.status === 403) {
+          this.setState({
+            friendAlert: true,
+            alertMessage:
+              'Error code 403: You can only view the posts of yourself or your friends',
+          });
+        }
+        if (response.status === 404) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 404: Not Found',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
+        }
       })
       .then((responseJson) => {
         this.setState({
           isLoading: false,
           postList: responseJson,
         });
-        // console.log(`friend post objects: ${JSON.stringify(responseJson)}`);
       })
       .catch((error) => {
         console.log(error);
@@ -192,40 +233,71 @@ class FriendProfile extends React.Component {
   sendFriendRequest = async () => {
     const token = await getAuthToken();
     const friendId = await getFriendId();
-    // const friendId = this.props.route.params.profileId;
-    console.log(`Friend id ${friendId}`);
     addFriend(friendId, token)
       .then((response) => {
-        // console.log(response.status);
-        if (response.status === 201) {
-          console.log('Your friend request has been sent');
-        } // todo need to add error handling conditions for other response codes
+        if (response.status === 200 || response.status === 201) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Your friend request has been sent',
+          });
+        }
+        if (response.status === 401) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 401: Unauthorized',
+          });
+        }
         if (response.status === 403) {
-          console.log('User is already added by a friend');
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 403: User is already added as a friend',
+          });
+        }
+        if (response.status === 404) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 404: Not Found',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 500: Server Error',
+          });
         }
       })
       .catch((error) => {
-        console.log(`Post unsuccessful: ${error}`);
+        console.log(error);
       });
   };
 
   deleteFriendPost = async () => {
     const token = await getAuthToken();
     const userId = await getFriendId();
-    console.log(userId);
-    console.log(this.state.postId);
 
     deletePost(userId, this.state.postId, token)
       .then((response) => {
         if (response.status === 200) {
-          console.log(`Post ${this.state.postId} deleted`);
           this.getPosts();
         }
         if (response.status === 400 || response.status === 403) {
           this.setState({
+            friendAlert: true,
             alertMessage:
               'You cannot delete a post that has been liked. The like has to be removed' +
               ' first',
+          });
+        }
+        if (response.status === 404) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 404: Not Found',
+          });
+        }
+        if (response.status === 500) {
+          this.setState({
+            friendAlert: true,
+            alertMessage: 'Error code 500: Server Error',
           });
         }
       })
@@ -260,7 +332,6 @@ class FriendProfile extends React.Component {
                   style={styles.friendButton}
                   onPress={async () => {
                     const profileId = await getFriendId();
-                    console.log(`profile id${profileId}`);
                     this.props.navigation.navigate('AddPost', {
                       profileId,
                     });
@@ -349,7 +420,6 @@ class FriendProfile extends React.Component {
             confirmButtonStyle={GlobalStyles.alertConfirmButton}
             confirmButtonTextStyle={GlobalStyles.alertConfirmButtonText}
             onConfirmPressed={() => {
-              // todo not working. trying to work out how to call deletePost, in PostManager
               this.deleteFriendPost().then(() => {
                 this.hideDeleteAlert();
               });
