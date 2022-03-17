@@ -92,18 +92,6 @@ class FriendProfile extends React.Component {
     this.unsubscribe();
   }
 
-  hideFriendAlert = () => {
-    this.setState({
-      friendAlert: false,
-    });
-  };
-
-  hideDeleteAlert = () => {
-    this.setState({
-      deleteAlert: false,
-    });
-  };
-
   /**
    * checks if user is a friend<br>
    * loops through friend list<br>
@@ -163,7 +151,7 @@ class FriendProfile extends React.Component {
           this.setState({
             alreadyFriend: true,
           });
-          this.getPosts();
+          await this.getPosts();
         } else {
           this.setState({
             alreadyFriend: false,
@@ -396,7 +384,9 @@ class FriendProfile extends React.Component {
             confirmButtonStyle={GlobalStyles.alertConfirmButton}
             confirmButtonTextStyle={GlobalStyles.alertConfirmButtonText}
             onConfirmPressed={() => {
-              this.hideFriendAlert();
+              this.setState({
+                friendAlert: false,
+              });
             }}
           />
           <AwesomeAlert
@@ -413,7 +403,9 @@ class FriendProfile extends React.Component {
             cancelButtonStyle={GlobalStyles.alertCancelButton}
             cancelButtonTextStyle={GlobalStyles.alertCancelButtonText}
             onCancelPressed={() => {
-              this.hideDeleteAlert();
+              this.setState({
+                deleteAlert: false,
+              });
             }}
             showConfirmButton
             confirmText="Delete"
@@ -421,7 +413,9 @@ class FriendProfile extends React.Component {
             confirmButtonTextStyle={GlobalStyles.alertConfirmButtonText}
             onConfirmPressed={() => {
               this.deleteFriendPost().then(() => {
-                this.hideDeleteAlert();
+                this.setState({
+                  deleteAlert: false,
+                });
               });
             }}
           />

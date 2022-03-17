@@ -22,7 +22,6 @@ class BottomTabNavigator extends Component {
   }
 
   checkLoggedIn = async () => {
-    // const authToken = await getAuthToken();
     const authToken = await getAuthToken();
     if (authToken == null) {
       this.props.navigation.navigate('Login');

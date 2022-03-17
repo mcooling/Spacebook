@@ -72,7 +72,7 @@ class MyProfile extends React.Component {
           console.log(error);
         });
 
-      this.getPosts();
+      await this.getPosts();
     });
   }
 

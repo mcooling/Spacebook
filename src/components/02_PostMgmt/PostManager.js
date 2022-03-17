@@ -37,37 +37,6 @@ class PostManager extends React.Component {
   };
 
   /**
-   * fetches list of friends posts
-   * @returns GET/user/user_id/post/ API call
-   */
-  // todo is this doing anything?
-  getPosts = async () => {
-    const token = await getAuthToken();
-    const friendId = await getFriendId();
-
-    return fetch(`http://localhost:3333/api/1.0.0/user/${friendId}/post`, {
-      headers: {
-        'X-Authorization': token,
-      },
-    })
-      .then((response) => {
-        if (response.status === 200) {
-          return response.json();
-        }
-      })
-      .then((responseJson) => {
-        this.setState({
-          isLoading: false,
-          postList: responseJson,
-        });
-        console.log(`friend post objects: ${JSON.stringify(responseJson)}`);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  /**
    * posts a like to a friends profile<br>
    * passes friend id<br>
    * @returns POST/user/user_id/post/post_id/like API call
