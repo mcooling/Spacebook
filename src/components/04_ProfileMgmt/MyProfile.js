@@ -186,8 +186,16 @@ class MyProfile extends React.Component {
     }
     return (
       <View style={GlobalStyles.profileParentContainer}>
-        <View style={GlobalStyles.profileHeaderContainer}>
+        <View style={GlobalStyles.headerContainer}>
           <Text style={GlobalStyles.screenTitle}>HOME</Text>
+          <Text
+            style={{ color: 'white', fontSize: 20 }}
+            onPress={() => {
+              this.props.navigation.navigate('DraftPosts');
+            }}
+          >
+            DRAFTS
+          </Text>
         </View>
         <Text
           style={{ padding: 20, fontSize: 18 }}

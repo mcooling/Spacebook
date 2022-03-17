@@ -72,7 +72,7 @@ class MyDetails extends React.Component {
     updateUserInfo(this.state.userId, this.state.token, patchRequestBody)
       .then((response) => {
         if (response.status === 200) {
-          return response.json();
+          return response;
         }
         if (response.status === 400) {
           this.setState({
@@ -133,23 +133,26 @@ class MyDetails extends React.Component {
           onChangeText={(value) => this.setState({ emailAddress: value })}
           style={GlobalStyles.textInput}
         />
-        <TouchableOpacity
-          style={GlobalStyles.button}
-          onPress={() => {
-            this.updateUserDetails();
-            this.props.navigation.navigate('MyProfile');
-          }}
-        >
-          <Text style={GlobalStyles.buttonText}>SUBMIT</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={GlobalStyles.button}
-          onPress={() => {
-            this.props.navigation.navigate('MyProfile');
-          }}
-        >
-          <Text style={GlobalStyles.buttonText}>CANCEL</Text>
-        </TouchableOpacity>
+        <View style={GlobalStyles.mediumButtonContainer}>
+          <TouchableOpacity
+            style={GlobalStyles.mediumButton}
+            onPress={() => {
+              this.updateUserDetails();
+              this.props.navigation.navigate('MyProfile');
+            }}
+          >
+            <Text style={GlobalStyles.buttonText}>SUBMIT</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={GlobalStyles.mediumButton}
+            onPress={() => {
+              this.props.navigation.navigate('MyProfile');
+            }}
+          >
+            <Text style={GlobalStyles.buttonText}>CANCEL</Text>
+          </TouchableOpacity>
+        </View>
+
         <AwesomeAlert
           show={showAlert}
           showProgress={false}

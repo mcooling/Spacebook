@@ -1,10 +1,11 @@
 import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
-  // view containers
   headerContainer: {
     padding: 20,
     backgroundColor: '#9c20c6',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   container: {
     alignItems: 'flex-start',

@@ -1,5 +1,3 @@
-import { getAuthToken, getUserId } from './AsyncStorage';
-
 /** USER MANAGEMENT ENDPOINTS */
 
 // POST/user

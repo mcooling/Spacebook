@@ -3,7 +3,6 @@ import { TextInput, Text, TouchableOpacity, View } from 'react-native';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import GlobalStyles from '../../utils/GlobalStyles';
 import { getAuthToken } from '../../utils/AsyncStorage';
-import { errorCodes } from '../../utils/ErrorCodes';
 import { updateSinglePost, viewSinglePost } from '../../utils/APIEndpoints';
 
 /**
@@ -101,7 +100,7 @@ class MyPost extends React.Component {
     )
       .then((response) => {
         if (response.status === 200) {
-          return response.json();
+          return response;
         }
         if (response.status === 400) {
           this.setState({
@@ -173,7 +172,7 @@ class MyPost extends React.Component {
               this.updatePost();
             }}
           >
-            <Text style={GlobalStyles.buttonText}>SUBMIT</Text>
+            <Text style={GlobalStyles.buttonText}>UPDATE</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={GlobalStyles.mediumButton}

@@ -53,7 +53,7 @@ class UpdatePhoto extends Component {
     uploadProfilePhoto(userId, blob, token)
       .then((response) => {
         if (response.status === 200) {
-          return response.json();
+          return response;
         }
         if (response.status === 400) {
           this.setState({
@@ -80,8 +80,7 @@ class UpdatePhoto extends Component {
           });
         }
       })
-      .then((response) => {
-        console.log('Picture added', response);
+      .then(() => {
         this.props.navigation.navigate('MyProfile');
       })
       .catch((err) => {

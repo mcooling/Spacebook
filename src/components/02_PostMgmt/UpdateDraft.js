@@ -48,7 +48,7 @@ class MyPost extends React.Component {
               });
             }}
           >
-            <Text style={GlobalStyles.buttonText}>SUBMIT</Text>
+            <Text style={GlobalStyles.buttonText}>UPDATE</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={GlobalStyles.mediumButton}

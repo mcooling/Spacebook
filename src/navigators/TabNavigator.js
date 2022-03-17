@@ -33,7 +33,6 @@ class BottomTabNavigator extends Component {
     logout(token)
       .then(async (response) => {
         if (response.status === 200) {
-          console.log('Logout successful');
           await deleteAuthToken();
           this.props.navigation.navigate('Login');
         } else {
